@@ -4,8 +4,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App.jsx'
 import './styles/global.css'
 
-// Se usa una variable de entorno, o un valor de respaldo temporal si no está configurado
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'pega_tu_client_id_aqui.apps.googleusercontent.com'
+// El Client ID se lee de las variables de entorno de Vite
+const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+if (!clientId || clientId.includes('pega_tu_client_id')) {
+    console.error("❌ ERROR: VITE_GOOGLE_CLIENT_ID no configurado en el entorno (Netlify/Render o .env)");
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

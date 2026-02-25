@@ -26,6 +26,23 @@ app.use(express.json());
 // PORT dinámico para Render/Heroku
 const PORT = process.env.PORT || 3001;
 
+// Servir archivos estáticos del frontend (opcional, para Render todo-en-uno)
+app.use(express.static(path.resolve(__dirname, '../dist')));
+
+// Ruta de estado para verificar que el API está vivo
+app.get('/status', (req, res) => {
+    res.json({ status: 'NASA KIWE API is running', timestamp: new Date(), version: '1.0.0' });
+});
+
+// En el raíz, si no es una API, enviamos el index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../dist/index.html'), (err) => {
+        if (err) {
+            res.status(200).send('<h1>NASA KIWE Backend</h1><p>El API está funcionando correctamente. Si estás buscando el Dashboard, revisa tu URL de Netlify.</p>');
+        }
+    });
+});
+
 const API_KEY = process.env.VITE_GOOGLE_API_KEY;
 
 // Cache temporal para evitar duplicidad de carpetas si se crean muy rápido

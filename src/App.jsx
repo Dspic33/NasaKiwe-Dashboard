@@ -31,7 +31,7 @@ function App() {
             setIsLoading(true)
             try {
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-                const isConfigured = supabaseUrl && !supabaseUrl.includes('TU_PROYECTO')
+                const isConfigured = supabase && supabaseUrl && !supabaseUrl.includes('TU_PROYECTO')
 
                 if (isConfigured) {
                     const { data, error } = await supabase
@@ -107,7 +107,7 @@ function App() {
         // Guardar en Supabase
         try {
             const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-            const isConfigured = supabaseUrl && !supabaseUrl.includes('TU_PROYECTO')
+            const isConfigured = supabase && supabaseUrl && !supabaseUrl.includes('TU_PROYECTO')
 
             if (isConfigured) {
                 const { error } = await supabase

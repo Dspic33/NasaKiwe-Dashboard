@@ -1,0 +1,79 @@
+@import './variables.css';
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--color-gris-claro);
+    color: var(--color-gris-oscuro);
+    line-height: 1.6;
+}
+
+/* Accessibility: Focus visible */
+:focus-visible {
+    outline: 3px solid var(--color-amarillo-institucional);
+    outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--color-verde-primario);
+    margin-bottom: 1rem;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+p {
+    line-height: 1.6;
+    font-size: 16px;
+    margin-bottom: 1rem;
+}
+
+ul {
+    list-style: none;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+}
+
+.institutional-card {
+    background: var(--color-blanco);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.institutional-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}

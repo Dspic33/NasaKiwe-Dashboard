@@ -1,0 +1,249 @@
+.quiz-container {
+    padding: 32px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.quiz-header {
+    border-bottom: 2px solid var(--color-gris-claro);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+}
+
+.quiz-progress {
+    font-size: 14px;
+    color: var(--color-gris-medio);
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.quiz-header h3 {
+    margin: 0;
+    color: var(--color-rojo-primario);
+    font-size: 20px;
+}
+
+.question-text {
+    font-size: 18px;
+    margin-bottom: 24px;
+    color: var(--color-gris-oscuro);
+    line-height: 1.4;
+}
+
+.options-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: var(--color-blanco);
+    border: 2px solid var(--color-gris-claro);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.option-btn:hover:not(:disabled) {
+    border-color: var(--color-rojo-claro);
+    background: #fff5f5;
+}
+
+.option-btn.selected {
+    border-color: var(--color-rojo-primario);
+}
+
+.option-letter {
+    width: 32px;
+    height: 32px;
+    background: var(--color-gris-claro);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: 16px;
+    transition: all 0.2s ease;
+}
+
+.option-btn:hover .option-letter {
+    background: var(--color-rojo-claro);
+    color: white;
+}
+
+.option-btn.correct {
+    border-color: var(--color-exito);
+    background: #f0fdf4;
+}
+
+.option-btn.correct .option-letter {
+    background: var(--color-exito);
+    color: white;
+}
+
+.option-btn.wrong {
+    border-color: var(--color-error);
+    background: #fef2f2;
+}
+
+.option-btn.wrong .option-letter {
+    background: var(--color-error);
+    color: white;
+}
+
+.option-content {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.status-icon {
+    margin-left: 12px;
+}
+
+.status-icon.lucide-check-circle {
+    color: var(--color-exito);
+}
+
+.status-icon.lucide-x-circle {
+    color: var(--color-error);
+}
+
+.feedback-section {
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    animation: slideUp 0.3s ease;
+}
+
+.feedback-correct {
+    background: #ecfdf5;
+    border-left: 4px solid var(--color-exito);
+    color: #065f46;
+}
+
+.feedback-wrong {
+    background: #fff7ed;
+    border-left: 4px solid var(--color-advertencia);
+    color: #9a3412;
+}
+
+.feedback-section p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.next-btn {
+    margin-top: 24px;
+    background: var(--color-rojo-primario);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    transition: all 0.3s ease;
+}
+
+.next-btn:hover {
+    background: var(--color-rojo-secundario);
+    transform: translateX(4px);
+}
+
+/* Result Styles */
+.quiz-result {
+    text-align: center;
+    padding: 48px 32px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.result-icon {
+    color: var(--color-amarillo-institucional);
+    margin-bottom: 24px;
+}
+
+.score-display {
+    margin: 24px 0;
+    font-size: 48px;
+    font-weight: 800;
+}
+
+.score-number {
+    color: var(--color-rojo-primario);
+}
+
+.score-total {
+    color: var(--color-gris-medio);
+}
+
+.qualification-badge {
+    display: inline-block;
+    background: var(--color-rojo-claro);
+    color: white;
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-size: 18px;
+    margin: 16px 0 32px;
+}
+
+.reset-btn {
+    background: transparent;
+    border: 2px solid var(--color-rojo-primario);
+    color: var(--color-rojo-primario);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    background: var(--color-rojo-primario);
+    color: white;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

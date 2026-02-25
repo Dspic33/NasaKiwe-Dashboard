@@ -1,0 +1,32 @@
+:root {
+  /* Paleta de Colores Principal */
+  --color-rojo-primario: #B91C1C;
+  --color-rojo-secundario: #DC2626;
+  --color-rojo-claro: #EF4444;
+  --color-amarillo-institucional: #FBBF24;
+  --color-blanco: #FFFFFF;
+  --color-gris-claro: #F3F4F6;
+  --color-gris-medio: #6B7280;
+  --color-gris-oscuro: #1F2937;
+
+  /* Colores para Herencia (Compatibilidad) */
+  --color-verde-primario: var(--color-rojo-primario);
+  --color-verde-secundario: var(--color-rojo-secundario);
+  --color-verde-claro: var(--color-rojo-claro);
+
+  /* Estados */
+  --color-exito: #2ECC71;
+  --color-advertencia: #F39C12;
+  --color-error: #E74C3C;
+  --color-info: #3498DB;
+
+  /* Dimensiones */
+  --sidebar-width: 260px;
+  --header-height: 64px;
+  --main-padding: 24px;
+  --border-radius: 8px;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(45, 95, 62, 0.2);
+}

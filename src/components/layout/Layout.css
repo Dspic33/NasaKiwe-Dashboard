@@ -1,0 +1,459 @@
+/* Sidebar Styles */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--color-rojo-primario);
+    color: var(--color-blanco);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.sidebar-header {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    max-width: 150px;
+    height: auto;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 24px 0;
+}
+
+.nav-item {
+    width: 100%;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    /* Ripple más visible */
+    transform: translate(-50%, -50%);
+    transition: width 0.7s ease-out, height 0.7s ease-out;
+    z-index: 0;
+}
+
+.nav-item:hover::before {
+    width: 450px;
+    height: 450px;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    /* Fondo sutil al hacer hover */
+    color: var(--color-blanco);
+    transform: scale(1.05);
+    /* Escala solicitada por el usuario */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+
+
+.nav-item.active {
+    background: var(--color-rojo-secundario);
+    color: var(--color-blanco);
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    background: rgba(251, 191, 36, 0.1);
+    /* Amarillo institucional sutil en ripple activo */
+}
+
+
+.nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.nav-text {
+    position: relative;
+    z-index: 1;
+}
+
+.active-arrow {
+    margin-left: auto;
+    position: relative;
+    z-index: 1;
+}
+
+
+.sidebar-footer {
+    padding: 20px;
+    font-size: 12px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Header Styles */
+.header {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    height: var(--header-height);
+    background: var(--color-blanco);
+    padding: 0 var(--main-padding);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 900;
+    border-bottom: 2px solid var(--color-rojo-claro);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    color: var(--color-verde-primario);
+}
+
+.gov-co-logo {
+    background: var(--color-rojo-primario);
+    color: white;
+    padding: 4px 12px;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 4px;
+    text-transform: lowercase;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--color-gris-medio);
+}
+
+.breadcrumb-link {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.breadcrumb-link:hover {
+    color: var(--color-rojo-primario);
+    text-decoration: underline;
+}
+
+.breadcrumb .current {
+    color: var(--color-rojo-primario);
+    font-weight: 600;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--color-gris-medio);
+}
+
+.search-bar input {
+    padding: 8px 12px 8px 40px;
+    border: 1px solid #E0E0E0;
+    border-radius: 20px;
+    width: 250px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: var(--color-rojo-primario);
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.2);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-button {
+    background: none;
+    color: var(--color-verde-primario);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    border: none;
+    cursor: pointer;
+}
+
+.icon-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(45, 95, 62, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease-out, height 0.4s ease-out;
+}
+
+.icon-button:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.icon-button:hover {
+    background: var(--color-gris-claro);
+    transform: scale(1.1);
+}
+
+.badge {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    min-width: 18px;
+    height: 18px;
+    background: #E53935;
+    /* Rojo institucional */
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 2px solid white;
+    padding: 0 4px;
+}
+
+.user-profile-brief {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 16px;
+    border-left: 1px solid #EEE;
+}
+
+.user-info {
+    text-align: right;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-gris-oscuro);
+    margin: 0;
+}
+
+.user-role {
+    font-size: 11px;
+    color: var(--color-gris-medio);
+    margin: 0;
+}
+
+.user-avatar-small {
+    width: 36px;
+    height: 36px;
+    background: var(--color-verde-claro);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .search-bar input {
+        width: 180px;
+    }
+}
+
+/* Main Content & Page Structure */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.page-content {
+    flex: 1;
+    padding: calc(var(--header-height) + 24px) var(--main-padding) 24px;
+    background-color: var(--color-gris-claro);
+}
+
+/* Footer Waves Animation */
+.footer-waves {
+    position: relative;
+    width: 100%;
+    margin-top: auto;
+    height: 100px;
+    margin-bottom: -10px;
+    /* To seamlessly connect with the footer */
+}
+
+.waves-svg {
+    position: relative;
+    width: 100%;
+    height: 100px;
+    margin-bottom: -7px;
+    /* Fix for safari gap */
+    min-height: 100px;
+    max-height: 150px;
+}
+
+.parallax-waves>use {
+    animation: move-forever 35s cubic-bezier(.55, .5, .45, .5) infinite;
+}
+
+.parallax-waves>use:nth-child(1) {
+    animation-delay: -2s;
+    animation-duration: 15s;
+}
+
+.parallax-waves>use:nth-child(2) {
+    animation-delay: -3s;
+    animation-duration: 20s;
+}
+
+.parallax-waves>use:nth-child(3) {
+    animation-delay: -4s;
+    animation-duration: 26s;
+}
+
+.parallax-waves>use:nth-child(4) {
+    animation-delay: -5s;
+    animation-duration: 40s;
+}
+
+@keyframes move-forever {
+    0% {
+        transform: translate3d(-90px, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(85px, 0, 0);
+    }
+}
+
+.footer-institutional {
+    background: var(--color-gris-claro);
+    padding: 32px 24px;
+    border-top: 2px solid var(--color-rojo-claro);
+    color: var(--color-gris-oscuro);
+    font-size: 14px;
+}
+
+.footer-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.footer-content p {
+    margin: 4px 0;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    .header {
+        left: 0;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .search-bar {
+        display: none;
+    }
+}

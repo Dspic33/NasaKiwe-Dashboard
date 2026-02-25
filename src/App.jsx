@@ -260,6 +260,33 @@ function App() {
         }
     }
 
+    if (isLoading) {
+        return (
+            <div style={{
+                height: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#F3F4F6',
+                gap: '20px'
+            }}>
+                <div style={{
+                    width: '50px',
+                    height: '50px',
+                    border: '5px solid #E5E7EB',
+                    borderTop: '5px solid #B91C1C',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                }}></div>
+                <p style={{ color: '#1F2937', fontWeight: '500' }}>Cargando Panel Nasa Kiwe...</p>
+                <style>{`
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                `}</style>
+            </div>
+        )
+    }
+
     // Le pasamos currenUser y onLogout al DashboardLayout para poder mostrar el botón de salir
     return (
         <DashboardLayout

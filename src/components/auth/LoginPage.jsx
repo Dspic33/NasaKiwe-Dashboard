@@ -81,10 +81,14 @@ const LoginPage = ({ onLogin }) => {
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                        <label
+                            htmlFor="institutional-email"
+                            style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}
+                        >
                             Correo Institucional
                         </label>
                         <input
+                            id="institutional-email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -101,10 +105,14 @@ const LoginPage = ({ onLogin }) => {
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+                        <label
+                            htmlFor="institutional-password"
+                            style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}
+                        >
                             Contraseña
                         </label>
                         <input
+                            id="institutional-password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

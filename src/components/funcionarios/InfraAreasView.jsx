@@ -18,7 +18,7 @@ const InfraAreasView = ({ onSelectArea, onSelectProfile }) => {
     return (
         <div className="portal-view">
             <section className="portal-hero">
-                <img src="/assets/imagenes/imagen2.png" alt="Banner" className="hero-video" />
+                <img src="/assets/imagenes/imagen2.webp" alt="Banner" className="hero-video" />
                 <div className="hero-content">
                     <h1>Obras de Infraestructura</h1>
                     <p>Gestión técnica y administrativa por áreas de intervención.</p>

@@ -30,7 +30,7 @@ const PortalFuncionarios = ({ onSelectProfile }) => {
     return (
         <div className="portal-view">
             <section className="portal-hero">
-                <img src="/assets/imagenes/imagen3.png" alt="Portal Background" className="hero-video" />
+                <img src="/assets/imagenes/imagen3.webp" alt="Portal Background" className="hero-video" loading="lazy" />
                 <div className="hero-content">
                     <h1>Portal del Funcionario</h1>
                     <p>Acceso centralizado a herramientas, normativas y gestión institucional.</p>

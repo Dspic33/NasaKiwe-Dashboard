@@ -4,7 +4,7 @@ export const AREAS_INFRAESTRUCTURA = [
         titulo: 'Área de Vivienda y Electrificación',
         descripcion: 'Gestión de proyectos habitacionales y redes de energía.',
         icono: 'Home',
-        banner: '/assets/imagenes/imagen4.png',
+        banner: '/assets/imagenes/imagen4.webp',
         equipo: [
             { id: 'asesor', nombre: 'Asesor de Vivienda', cargo: 'Asesor Técnico', foto: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=200' },
             { id: 'ingeniero_electrico', nombre: 'Ing. Eléctrico', cargo: 'Ingeniero Eléctrico', foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200' },

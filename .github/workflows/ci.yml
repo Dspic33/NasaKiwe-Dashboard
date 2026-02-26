@@ -1,4 +1,4 @@
-name: Lint Code Quality
+name: CI - Nasa Kiwe Quality
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  lint:
+  test-and-lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,9 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+
+    - name: Run Tests
+      run: npm test
 
     - name: Run Lint
       run: npm run lint || echo "Lint script failed or not found, continuing..."

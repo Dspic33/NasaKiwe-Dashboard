@@ -34,19 +34,22 @@ export async function readSheet(accessToken, sheetId, range) {
     const rows = response.data.values;
     if (!rows || rows.length === 0) return [];
 
-    const data = rows.map((row, index) => ({
+    // Filtrar primero para eliminar cabeceras y filas vacías
+    const cleanRows = rows.filter(row =>
+        row[0] &&
+        row[0].toLowerCase() !== 'ítem' &&
+        row[0].toLowerCase() !== 'item' &&
+        row[0] !== ''
+    );
+
+    // Mapear con IDs secuenciales basados en el resultado limpio
+    return cleanRows.map((row, index) => ({
         id: index + 1,
         item: row[0] || '',
         descripcion: row[1] || '',
         unidad: row[2] || '',
         cantidad: parseFloat((row[3] || '0').replace(',', '.')) || 0,
     }));
-
-    return data.filter(d =>
-        d.item.toLowerCase() !== 'ítem' &&
-        d.item.toLowerCase() !== 'item' &&
-        d.item !== ''
-    );
 }
 
 export async function updateSheetRows(accessToken, sheetId, range, values) {

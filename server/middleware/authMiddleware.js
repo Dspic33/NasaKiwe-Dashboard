@@ -17,7 +17,7 @@ async function validateGoogleToken(accessToken) {
  * Middleware para validar que la petición trae un token válido de NASA KIWE.
  */
 export async function authMiddleware(req, res, next) {
-    const { accessToken } = req.body || {};
+    const { accessToken } = req.body;
     const token = accessToken || req.headers.authorization?.split(' ')[1];
 
     if (!token) {

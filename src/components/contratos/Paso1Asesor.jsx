@@ -79,6 +79,13 @@ const Paso1Asesor = ({ formData, setFormData, onNext, onSaveDraft, isSaving, isR
         setIsGeneratingDocs(true);
         let updatedDocs = {};
         try {
+            const token = localStorage.getItem('real_google_access_token');
+            if (!token) {
+                alert("Atención: No has conectado tu cuenta de Google. Conéctala en tu perfil para generar documentos reales.");
+            } else {
+                googleService.isConnected = true;
+            }
+
             const response = await googleService.generateDocsFromTemplates(formData);
             const specificRes = await googleService.fillSpecificTemplate(formData);
 
@@ -98,10 +105,12 @@ const Paso1Asesor = ({ formData, setFormData, onNext, onSaveDraft, isSaving, isR
             }
         } catch (e) {
             console.error("Error al generar Google Docs:", e);
+            alert(`Hubo un problema generando los documentos en Google Drive: ${e.message}`);
         } finally {
             setIsGeneratingDocs(false);
         }
 
+        // Llamar a next pasando los datos generados para evitar guardado asíncrono desfasado
         onNext(updatedDocs);
     }
 
@@ -115,48 +124,6 @@ const Paso1Asesor = ({ formData, setFormData, onNext, onSaveDraft, isSaving, isR
 
 
             <form className="contrato-form" onSubmit={(e) => e.preventDefault()}>
-
-                {/* CONFIGURACIÓN BITÁCORA - al inicio */}
-                <div style={{ marginBottom: '24px', padding: '18px 20px', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: '#2D5F3E', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
-                            <Database size={17} />
-                        </div>
-                        <div>
-                            <p style={{ margin: 0, fontWeight: 700, fontSize: '14px', color: '#1E293B' }}>Configuración para Bitácora</p>
-                            <p style={{ margin: 0, fontSize: '11px', color: '#64748B' }}>Defina la cantidad de viviendas del contrato</p>
-                        </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <label style={{ margin: 0, fontWeight: 600, fontSize: '13px', color: '#374151', whiteSpace: 'nowrap' }}>Cantidad de Viviendas</label>
-                        <input
-                            type="number"
-                            min="1"
-                            max="50"
-                            value={formData.viviendas_bitacora?.length || 1}
-                            onChange={e => {
-                                const val = parseInt(e.target.value) || 1;
-                                const current = [...(formData.viviendas_bitacora || [])];
-                                let updated = [];
-                                if (val > current.length) {
-                                    const diff = val - current.length;
-                                    const additions = Array(diff).fill(null).map((_, i) => ({
-                                        numero: (current.length + i + 1).toString().padStart(2, '0'),
-                                        beneficiario: '',
-                                        interventor: ''
-                                    }));
-                                    updated = [...current, ...additions];
-                                } else {
-                                    updated = current.slice(0, val);
-                                }
-                                setFormData(prev => ({ ...prev, viviendas_bitacora: updated }));
-                            }}
-                            disabled={isReadOnly}
-                            style={{ width: '80px', padding: '6px 10px', borderRadius: '6px', border: '1px solid #D1D5DB', fontSize: '14px', fontWeight: 600 }}
-                        />
-                    </div>
-                </div>
-
                 <div className="form-grid">
                     <div className="form-group">
                         <label>1. Fecha del Estudio <span className="req">*</span></label>
@@ -234,6 +201,48 @@ const Paso1Asesor = ({ formData, setFormData, onNext, onSaveDraft, isSaving, isR
                     </div>
                 </div>
 
+                {/* SECCIÓN CONFIGURACIÓN PARA BITÁCORA MOVIDA ARRIBA */}
+                <div className="viviendas-bitacora-section" style={{ marginTop: '20px', padding: '24px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: '#2D5F3E', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                            <Database size={20} />
+                        </div>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '18px', color: '#1E293B' }}>Configuración para Bitácora</h3>
+                            <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#64748B' }}>Defina la cantidad de viviendas. Los detalles se completarán en la Bitácora.</p>
+                        </div>
+                    </div>
+
+                    <div className="form-group" style={{ maxWidth: '300px' }}>
+                        <label>Cantidad de Viviendas</label>
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max="50"
+                            value={formData.viviendas_bitacora?.length || 1}
+                            onChange={e => {
+                                const val = parseInt(e.target.value) || 1;
+                                const current = [...(formData.viviendas_bitacora || [])];
+                                let updated = [];
+                                
+                                if (val > current.length) {
+                                    const diff = val - current.length;
+                                    const additions = Array(diff).fill(null).map((_, i) => ({
+                                        numero: (current.length + i + 1).toString().padStart(2, '0'),
+                                        beneficiario: '',
+                                        interventor: ''
+                                    }));
+                                    updated = [...current, ...additions];
+                                } else {
+                                    updated = current.slice(0, val);
+                                }
+                                setFormData(prev => ({ ...prev, viviendas_bitacora: updated }));
+                            }}
+                            disabled={isReadOnly}
+                        />
+                    </div>
+                </div>
+
                 <div className="sheets-section" style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', marginTop: '30px' }}>
                     <div className="sheets-header" style={{ padding: '15px 20px', background: '#f8fafc', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -255,49 +264,48 @@ const Paso1Asesor = ({ formData, setFormData, onNext, onSaveDraft, isSaving, isR
                     </div>
 
                     <div className="table-responsive" style={{ padding: '0', height: '700px', overflow: 'hidden', position: 'relative' }}>
-                        {/* Overlay: no carga el iframe hasta hacer clic para evitar que Google Docs robe el foco */}
-                        {iframeActive ? (
-                            <iframe
-                                src={`https://docs.google.com/document/d/17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0/edit?rm=minimal`}
-                                style={{ width: '100%', height: '100%', border: 'none' }}
-                                title="Google Docs Template Preview"
-                            ></iframe>
-                        ) : (
+                        {/* Overlay: bloquea el iframe hasta que el usuario haga clic */}
+                        {!iframeActive && (
                             <div
                                 onClick={() => setIframeActive(true)}
                                 style={{
-                                    width: '100%',
-                                    height: '100%',
+                                    position: 'absolute',
+                                    inset: 0,
+                                    zIndex: 10,
                                     cursor: 'pointer',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    background: '#F1F5F9',
-                                    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, #E2E8F0 19px, #E2E8F0 20px)',
-                                    backgroundSize: '100% 20px',
+                                    gap: '12px',
+                                    background: 'rgba(248, 250, 252, 0.55)',
+                                    backdropFilter: 'blur(2px)',
                                 }}
                             >
                                 <div style={{
                                     background: 'white',
                                     border: '2px solid #2D5F3E',
                                     borderRadius: '10px',
-                                    padding: '24px 32px',
+                                    padding: '18px 32px',
                                     textAlign: 'center',
-                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                                    pointerEvents: 'none',
                                 }}>
-                                    <div style={{ fontSize: '32px', marginBottom: '12px' }}>📝</div>
-                                    <p style={{ margin: 0, fontWeight: 700, color: '#2D5F3E', fontSize: '16px' }}>Clic para cargar y ver el documento</p>
-                                    <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#6B7280', maxWidth: '250px' }}>
-                                        El documento se mantiene inactivo para no interrumpir tu escritura en el formulario.
-                                    </p>
+                                    <div style={{ fontSize: '28px', marginBottom: '8px' }}>✏️</div>
+                                    <p style={{ margin: 0, fontWeight: 700, color: '#2D5F3E', fontSize: '15px' }}>Clic para editar el documento</p>
+                                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6B7280' }}>El documento se activará para su edición</p>
                                 </div>
                             </div>
                         )}
+                        <iframe
+                            src={`https://docs.google.com/document/d/17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0/edit?rm=minimal`}
+                            style={{ width: '100%', height: '100%', border: 'none' }}
+                            title="Google Docs Template Preview"
+                        ></iframe>
                     </div>
                 </div>
 
-    {!isReadOnly && (
+                {!isReadOnly && (
                     <div className="wizard-actions-footer" style={{ marginTop: '30px' }}>
                         <button type="button" className="btn-secondary" onClick={onSaveDraft} disabled={isSaving}>
                             {isSaving ? (

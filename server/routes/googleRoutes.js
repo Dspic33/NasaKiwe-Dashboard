@@ -1,29 +1,8 @@
 import express from 'express';
 import * as sheetsService from '../services/sheetsService.js';
 import * as docsService from '../services/docsService.js';
-import { getValidAccessToken } from '../services/tokenService.js';
 
 const router = express.Router();
-
-/**
- * GET /api/google/token
- * Devuelve un access_token válido (renovándolo automáticamente si venció).
- * El frontend lo llama antes de cualquier operación con Google Drive/Docs.
- */
-router.get('/token', async (req, res) => {
-    try {
-        const accessToken = await getValidAccessToken();
-        if (!accessToken) {
-            return res.status(404).json({
-                connected: false,
-                error: 'No hay refresh_token guardado. Ve a /auth/google/login para conectar.'
-            });
-        }
-        res.json({ connected: true, access_token: accessToken });
-    } catch (err) {
-        res.status(500).json({ connected: false, error: err.message });
-    }
-});
 
 // Obtener datos de Sheets
 router.post('/sheets', async (req, res) => {

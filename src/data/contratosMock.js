@@ -28,26 +28,27 @@ export const ROLES_USUARIO = {
     CONTRATISTA: 'contratista'
 }
 
-// Mock initial data
+// Mock initial data - Conservando solo el aprobado solicitado
 export const MOCK_CONTRATOS = [
     {
-        id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-        numero_proceso: 'CD-VIV-2026-PRUEBA',
-        fecha: new Date().toISOString().split('T')[0],
-        descripcion_objeto: 'PROCESO DE PRUEBA: Construcción y mejoramiento de soluciones de vivienda rural.',
+        id: '98b50e2d-dc99-43ef-b387-052637738f61',
+        numero_proceso: 'CD-VIV-2026-N391',
+        fecha: '2026-03-02',
+        descripcion_objeto: 'RECONSTRUCCIÓN DE VIVIENDAS EN SITIO PROPIO: Proyecto Habitacional Popayán Fase II.',
         lugar_ejecucion: 'Popayán, Cauca',
-        valor_estimado: 50000000,
-        estado: ESTADOS_CONTRATACION.BORRADOR,
+        valor_estimado: 125400000,
+        estado: ESTADOS_CONTRATACION.APROBADO,
         creado_por: 'u1',
         nombre_creador: 'Arq Juan Camilo Manzano T.',
-        revisado_por: null,
+        revisado_por: 'u2',
         ultima_actualizacion: new Date().toISOString(),
         dias_en_etapa: 0,
         materiales: [],
-        observaciones_juridico: '',
-        observaciones_directora: '',
+        observaciones_juridico: 'Revisado y aprobado para firma.',
+        observaciones_directora: 'Procesar con prioridad.',
         historial_cambios: [
-            { fecha: new Date().toISOString(), usuario: ROLES_USUARIO.ASESOR_VIVIENDA, nombre: 'Arq Juan Camilo Manzano T.', accion: 'Creación de borrador de prueba' }
+            { fecha: '2026-03-01', usuario: ROLES_USUARIO.ASESOR_VIVIENDA, nombre: 'Arq Juan Camilo Manzano T.', accion: 'Creación' },
+            { fecha: '2026-03-02', usuario: ROLES_USUARIO.JURIDICO, nombre: 'Carlos Aztaiza C.', accion: 'Aprobación Jurídica' }
         ]
     }
 ]

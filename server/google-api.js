@@ -25,7 +25,16 @@ app.use(express.json());
 app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com;");
+    res.setHeader('Content-Security-Policy', [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob: https://*.googleusercontent.com https://*.supabase.co https://*.supabase.in",
+        "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://apis.google.com https://accounts.google.com https://oauth2.googleapis.com",
+        "frame-src https://accounts.google.com",
+        "worker-src blob:"
+    ].join('; '));
 
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();

@@ -1,5 +1,9 @@
 @import './variables.css';
 
+html {
+    overflow-y: scroll;
+}
+
 * {
     margin: 0;
     padding: 0;

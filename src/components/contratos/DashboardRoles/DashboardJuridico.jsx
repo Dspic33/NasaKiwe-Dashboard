@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { FileText, Search, Filter, Eye, CheckSquare, Clock, AlertCircle } from 'lucide-react'
-import { ESTADOS_CONTRATACION, ESTADOS_LABELS } from '../../../data/contratosMock'
+import { ESTADOS_CONTRATACION, ESTADOS_LABELS, ROLES_USUARIO } from '../../../data/contratosMock'
 import '../Contratos.css'
 
 const DashboardJuridico = ({ contratos, currentUser, onOpenContrato }) => {
@@ -20,8 +20,8 @@ const DashboardJuridico = ({ contratos, currentUser, onOpenContrato }) => {
     const listToDisplay = activeTab === 'pendientes' ? contratosPendientes : contratosHistorial
 
     const filteredContratos = listToDisplay.filter(c =>
-        c.numero_proceso.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.descripcion_objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.numero_proceso?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.descripcion_objeto?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.nombre_creador?.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
@@ -138,10 +138,10 @@ const DashboardJuridico = ({ contratos, currentUser, onOpenContrato }) => {
                                 </td>
                                 <td>
                                     <span className="text-truncate" title={contrato.descripcion_objeto}>
-                                        {contrato.descripcion_objeto.substring(0, 50)}...
+                                        {(contrato.descripcion_objeto || '').substring(0, 50)}...
                                     </span>
                                 </td>
-                                <td>{new Date(contrato.ultima_actualizacion).toLocaleDateString()}</td>
+                                <td>{contrato.ultima_actualizacion ? new Date(contrato.ultima_actualizacion).toLocaleDateString() : 'N/A'}</td>
                                 <td className="actions-cell">
                                     {activeTab === 'pendientes' ? (
                                         <button className="btn-primary small" onClick={() => onOpenContrato(contrato)}>

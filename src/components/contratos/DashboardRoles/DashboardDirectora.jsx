@@ -116,7 +116,7 @@ const DashboardDirectora = ({ contratos, currentUser, onOpenContrato }) => {
                                 <td><strong>{contrato.numero_proceso}</strong></td>
                                 <td>
                                     <span className="text-truncate" title={contrato.descripcion_objeto} style={{ maxWidth: '250px' }}>
-                                        {contrato.descripcion_objeto.substring(0, 60)}...
+                                        {(contrato.descripcion_objeto || '').substring(0, 60)}...
                                     </span>
                                 </td>
                                 <td>

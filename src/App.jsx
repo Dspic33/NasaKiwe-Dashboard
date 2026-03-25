@@ -12,6 +12,7 @@ import RoleProfile from './components/funcionarios/RoleProfile'
 import ContratosView from './components/contratos/ContratosView'
 import ContratacionWizard from './components/contratos/ContratacionWizard'
 import LoginPage from './components/auth/LoginPage'
+import InspectorDashboard from './components/inspector/InspectorDashboard'
 import { MOCK_CONTRATOS, ESTADOS_CONTRATACION, ROLES_USUARIO } from './data/contratosMock'
 import { supabase } from './services/supabaseClient'
 
@@ -98,6 +99,14 @@ function App() {
         setView('login');
     }
 
+    // Reiniciar el scroll al inicio cada vez que cambie la vista principal
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        // También intentar desplazar el contenedor principal si tiene scroll interno
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) mainContent.scrollTop = 0;
+    }, [view]);
+
     const handleUpdateContrato = async (updatedContrato, shouldNavigate = true) => {
         if (!updatedContrato) {
             if (shouldNavigate) setView('contratos');
@@ -114,6 +123,78 @@ function App() {
                     .from('contratos')
                     .upsert({ ...updatedContrato, ultima_actualizacion: new Date().toISOString() })
                 if (error) throw error
+
+
+                // === INTEGRACIÓN AUTOMÁTICA CON BITÁCORA ===
+                // Si el contrato pasa a APROBADO y aún no tiene una bitácora vinculada
+                if (updatedContrato.estado === 'APROBADO' && !updatedContrato.bitacora_proyectos_id) {
+                    try {
+                        console.log('🚀 Iniciando creación automática de Bitácora...');
+                        
+                        const municipio = updatedContrato.lugar_ejecucion?.split(',')[0]?.trim() || 'No especificado';
+                        const resguardo = updatedContrato.lugar_ejecucion?.split(',')[1]?.trim() || 'N/A';
+                        
+                        // 1. Crear el proyecto directamente en la tabla
+                        const { data: proyectoData, error: proyectoError } = await supabase
+                            .from('proyectos')
+                            .insert({
+                                nombre: `PROYECTO - ${updatedContrato.numero_proceso}`,
+                                municipio: municipio,
+                                resguardo: resguardo,
+                                numero_proceso: updatedContrato.numero_proceso,
+                                valor_estimado: parseFloat(updatedContrato.valor_estimado) || 0,
+                                descripcion_objeto: updatedContrato.descripcion_objeto || '',
+                                estado: 'ACTIVO',
+                                created_at: new Date().toISOString()
+                            })
+                            .select('id')
+                            .single();
+                        
+                        if (proyectoError) throw proyectoError;
+                        
+                        const proyectoId = proyectoData?.id;
+                        console.log('✅ Proyecto creado:', proyectoId);
+                        
+                        // 2. Crear las viviendas del contrato si existen
+                        const casas = updatedContrato.viviendas_bitacora || [];
+                        if (proyectoId && casas.length > 0) {
+                            const viviendasToInsert = casas.map((casa, idx) => ({
+                                proyecto_id: proyectoId,
+                                numero_lote: casa.numero || String(idx + 1).padStart(2, '0'),
+                                beneficiario: casa.beneficiario || '',
+                                interventor: casa.interventor || '',
+                                municipio: casa.municipio || municipio,
+                                resguardo: casa.resguardo || resguardo,
+                                departamento: casa.departamento || '',
+                                estado: 'PENDIENTE',
+                                created_at: new Date().toISOString()
+                            }));
+                            
+                            const { error: viviendasError } = await supabase
+                                .from('viviendas')
+                                .insert(viviendasToInsert);
+                            
+                            if (viviendasError) {
+                                console.error('Error creando viviendas:', viviendasError);
+                            } else {
+                                console.log(`✅ ${viviendasToInsert.length} viviendas creadas`);
+                            }
+                        }
+                        
+                        if (proyectoId) {
+                            updatedContrato.bitacora_proyectos_id = proyectoId;
+                            // Actualizar el contrato con el ID de la bitácora creada
+                            await supabase
+                                .from('contratos')
+                                .update({ bitacora_proyectos_id: proyectoId })
+                                .eq('id', updatedContrato.id);
+                            
+                            console.log('✅ Contrato vinculado a Bitácora:', proyectoId);
+                        }
+                    } catch (rpcErr) {
+                        console.error('⚠️ Error creando bitácora automática:', rpcErr);
+                    }
+                }
             }
         } catch (err) {
             console.error('Error guardando en Supabase:', err)
@@ -163,6 +244,7 @@ function App() {
         switch (view) {
             case 'contratos':
                 return <ContratosView
+                    key="view-contratos"
                     contratos={contratos}
                     currentUser={currentUser}
                     onNavigate={setView}
@@ -228,6 +310,16 @@ function App() {
                 return <ArchitectProfile onBack={() => setView('infra-team')} />
             case 'talento':
                 return <TalentoHumanoProfile />
+            case 'bitacora':
+                return <ContratosView
+                    key="view-bitacora"
+                    contratos={contratos}
+                    currentUser={currentUser}
+                    onNavigate={setView}
+                    initialTab="bitacora"
+                />
+            case 'inspector':
+                return <InspectorDashboard />
             case 'role-profile':
                 return <RoleProfile
                     roleData={selectedRole}

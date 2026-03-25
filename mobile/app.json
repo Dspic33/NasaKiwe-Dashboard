@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Nasa Kiwe Residente",
+    "slug": "nasakiwe-residente",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2D5F3E"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nasakiwe.residente"
+    },
+    "android": {
+      "package": "com.nasakiwe.residente",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#2D5F3E",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}

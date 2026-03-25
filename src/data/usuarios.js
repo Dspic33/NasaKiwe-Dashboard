@@ -21,6 +21,20 @@ export const USUARIOS = [
         email: 'directora@nasakiwe.gov.co',
         password: '123',
         rol: ROLES_USUARIO.DIRECTORA
+    },
+    {
+        id: 'u4',
+        nombre: 'Ing. Roberto Gómez',
+        email: 'inspector@nasakiwe.gov.co',
+        password: '123',
+        rol: ROLES_USUARIO.INSPECTOR
+    },
+    {
+        id: 'u5',
+        nombre: 'Ing. Ana Martínez',
+        email: 'residente@nasakiwe.gov.co',
+        password: '123',
+        rol: ROLES_USUARIO.RESIDENTE
     }
 
 ];

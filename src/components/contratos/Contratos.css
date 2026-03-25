@@ -49,24 +49,24 @@
 }
 
 /* Tabs Styling */
-.tabs-wrapper {
+.contratos-tabs {
     display: flex;
-    gap: 24px;
-    align-items: center;
+    gap: 32px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #E5E7EB;
 }
 
 .tab-btn {
     background: none;
     border: none;
-    padding: 8px 4px;
-    font-size: 15px;
-    font-weight: 600;
+    padding: 8px 4px 12px;
+    font-size: 16px;
+    font-weight: 700;
     color: var(--color-gris-medio);
     cursor: pointer;
     position: relative;
     transition: all 0.3s ease;
-    overflow: hidden;
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
 }
 
 .tab-btn:hover {
@@ -75,7 +75,7 @@
 
 .tab-btn.active {
     color: var(--color-rojo-primario);
-    border-bottom: 2px solid var(--color-rojo-primario);
+    border-bottom: 3px solid var(--color-rojo-primario);
 }
 
 /* Shine Animation */
@@ -187,33 +187,12 @@
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease-out, height 0.6s ease-out;
-}
-
-.btn-primary:hover::before {
-    width: 300px;
-    height: 300px;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-primary:hover {
     background: #1F4129;
     box-shadow: 0 4px 12px rgba(45, 95, 62, 0.3);
-    transform: scale(1.02);
 }
 
 .btn-secondary {
@@ -227,27 +206,7 @@
     border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-secondary::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(45, 95, 62, 0.1);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease-out, height 0.6s ease-out;
-}
-
-.btn-secondary:hover::before {
-    width: 300px;
-    height: 300px;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-secondary:hover {

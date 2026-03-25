@@ -155,6 +155,8 @@ const LoginPage = ({ onLogin }) => {
                 <div style={{ marginTop: '32px', borderTop: '1px solid #e5e7eb', paddingTop: '20px', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
                     <strong>Credenciales de prueba:</strong><br />
                     Asesor: <code>asesor@nasakiwe.gov.co</code><br />
+                    Inspector: <code>inspector@nasakiwe.gov.co</code><br />
+                    Residente: <code>residente@nasakiwe.gov.co</code><br />
                     Jurídico: <code>juridico@nasakiwe.gov.co</code><br />
                     Directora: <code>directora@nasakiwe.gov.co</code><br />
                     <em>Password para todos: <code>123</code></em>

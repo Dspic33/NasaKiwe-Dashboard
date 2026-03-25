@@ -2,7 +2,7 @@ import React from 'react'
 import { Bell, Search, User, LogOut, Menu as MenuIcon } from 'lucide-react'
 
 const Header = ({ toggleSidebar, currentView, onNavigate, currentUser, onLogout, unreadNotifications }) => {
-    const isDashboardView = currentView === 'contratos' || currentView === 'wizard'
+    const isDashboardView = currentView === 'contratos' || currentView === 'wizard' || currentView === 'bitacora'
 
     return (
         <header className="header" role="banner">
@@ -45,7 +45,8 @@ const Header = ({ toggleSidebar, currentView, onNavigate, currentUser, onLogout,
                                 <span className="current">
                                     {currentView === 'perfil' ? 'Perfil Arquitecto' :
                                         currentView === 'talento' ? 'Perfil Talento Humano' :
-                                            currentView}
+                                            currentView === 'bitacora' ? 'Sistema de control y seguimiento de obra' :
+                                                currentView}
                                 </span>
                             </>
                         )}

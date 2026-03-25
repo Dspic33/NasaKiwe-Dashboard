@@ -57,4 +57,45 @@ const DashboardLayout = ({ children, currentView, onNavigate, currentUser, onLog
     )
 }
 
-export default DashboardLayout
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null, errorInfo: null };
+    }
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error, errorInfo) {
+        this.setState({ error, errorInfo });
+        console.error("ErrorBoundary caught an error", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div style={{ padding: '40px', background: '#FEE2E2', color: '#991B1B', margin: '20px', borderRadius: '8px', border: '2px solid #DC2626' }}>
+                    <h2 style={{fontSize:'24px', fontWeight:'bold', marginBottom:'16px'}}>⚠️ Error en la aplicación (Bitácora)</h2>
+                    <p>Me ayudaría mucho si copias este texto o tomas una captura:</p>
+                    <pre style={{ background: '#7F1D1D', color: '#FFFFFF', padding: '16px', borderRadius: '4px', overflowX: 'auto', marginTop:'10px' }}>
+                        {this.state.error && this.state.error.toString()}
+                    </pre>
+                    <pre style={{ background: '#450A0A', color: '#FCA5A5', padding: '16px', borderRadius: '4px', overflowX: 'auto', marginTop:'10px', fontSize:'12px' }}>
+                        {this.state.errorInfo && this.state.errorInfo.componentStack}
+                    </pre>
+                    <button onClick={() => window.location.reload()} style={{marginTop:'20px', padding:'10px 20px', background:'#DC2626', color:'white', border:'none', borderRadius:'4px', cursor:'pointer'}}>Recargar Página</button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
+const DashboardLayoutWrapper = (props) => (
+    <ErrorBoundary>
+        <DashboardLayout {...props} />
+    </ErrorBoundary>
+);
+
+export default DashboardLayoutWrapper;

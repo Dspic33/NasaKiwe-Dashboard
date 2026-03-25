@@ -15,13 +15,14 @@ export async function generateDocument(accessToken, templateId, formData, newDoc
     const sheets = google.sheets({ version: 'v4', auth });
 
     const rootFolderId = '11_IB0SzUixT42NZnccjhO8jG0KQSh7WK';
-    const folderName = `Expediente ${formData?.numero || 'Generado'}`;
+    const numRef = formData?.numero_proceso || formData?.numero || 'Generado';
+    const folderName = `Expediente ${numRef}`;
 
     // 1. Obtener/Crear carpeta
     const targetFolderId = await getOrCreateFolder(drive, rootFolderId, folderName);
 
     // 2. Obtener/Crear archivo
-    const fileName = newDocumentName || `Documento - ${formData?.numero || Date.now()}`;
+    const fileName = newDocumentName || `Documento - ${numRef}`;
     const newDocId = await getOrCreateFile(drive, targetFolderId, fileName, templateId);
 
     // 3. Reemplazar variables

@@ -3,8 +3,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 class GoogleIntegrationService {
 
     constructor() {
-        // Obtenemos estado guardado en local o simulamos desconectado
-        this.isConnected = !!localStorage.getItem('real_google_access_token') || localStorage.getItem('google_auth_token') === 'true'
+        // Modo simulación siempre conectado (el backend maneja el token real)
+        this.isConnected = true
+        localStorage.setItem('google_auth_token', 'true')
 
         // Datos mockeados de una hoja de Google Sheets para Materiales
         this.mockSheetData = [
@@ -16,19 +17,26 @@ class GoogleIntegrationService {
         ]
     }
 
-    // SIMULACIÓN OAUTH
+    /**
+     * Obtiene un access_token válido del backend.
+     * El backend usa el refresh_token almacenado en Supabase para renovarlo automáticamente.
+     */
+    async _getBackendToken() {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/google/token`, { method: 'GET' })
+            if (res.ok) {
+                const data = await res.json()
+                if (data.connected && data.access_token) return data.access_token
+            }
+        } catch (e) {
+            console.warn('Backend token no disponible:', e.message)
+        }
+        return null
+    }
+
+    // SIMULACIÓN OAUTH (Redirige al backend)
     async loginWithGoogle() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                this.isConnected = true
-                localStorage.setItem('google_auth_token', 'true')
-                resolve({
-                    success: true,
-                    email: 'asesor.vivienda@nasakiwe.gov.co',
-                    lastSync: new Date().toISOString()
-                })
-            }, 1500) // Simular delay de red y payload de OAuth
-        })
+        window.location.href = `${API_BASE_URL}/auth/google/login`
     }
 
     async logoutGoogle() {
@@ -41,170 +49,88 @@ class GoogleIntegrationService {
         })
     }
 
-    getAuthStatus() {
-        return this.isConnected
-    }
+    getAuthStatus() { return this.isConnected }
 
-    // SIMULACIÓN GOOGLE SHEETS AHORA CON PROXY REAL
+    // GOOGLE SHEETS
     async getMaterialesFromSheet(sheetId) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
+        const token = await this._getBackendToken()
+        if (!token) return { success: true, data: this.mockSheetData, lastSync: new Date().toISOString() }
 
         try {
             const req = await fetch(`${API_BASE_URL}/api/google/sheets`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    accessToken: token,
-                    sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs', // ID real del excel
-                    range: 'Hoja 1!A:D' // Asumimos un nombre de hoja genérico, se puede perfeccionar
-                })
+                body: JSON.stringify({ accessToken: token, sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs', range: 'Hoja 1!A:D' })
             });
-
-            if (!req.ok) {
-                throw new Error("HTTP error al leer Google Sheets");
-            }
-
+            if (!req.ok) throw new Error("Error HTTP Google Sheets");
             const resData = await req.json();
-
-            if (resData.success && resData.data.length > 0) {
-                return {
-                    success: true,
-                    data: resData.data,
-                    lastSync: new Date().toISOString()
-                };
-            } else {
-                return {
-                    success: false,
-                    error: "La hoja está vacía o el rango es incorrecto"
-                }
-            }
-
+            if (resData.success && resData.data.length > 0) return { success: true, data: resData.data, lastSync: new Date().toISOString() };
+            return { success: false, error: "La hoja está vacía" }
         } catch (error) {
-            console.warn("Fallo leyendo la hoja real, cayendo en fallback MOCK", error);
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({
-                        success: true,
-                        data: this.mockSheetData,
-                        lastSync: new Date().toISOString()
-                    })
-                }, 1000)
-            })
+            return { success: true, data: this.mockSheetData, lastSync: new Date().toISOString() }
         }
     }
 
     async updateMaterialEnSheet(rowData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
+        const token = await this._getBackendToken()
+        if (!token) return { success: true, timestamp: new Date().toISOString() }
         const rowIndex = rowData.id;
-
         try {
             const req = await fetch(`${API_BASE_URL}/api/google/sheets/update`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
-                    sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
-                    range: `Hoja 1!A${rowIndex}:D${rowIndex}`,
-                    values: [
-                        [
-                            rowData.item || '',
-                            rowData.descripcion || '',
-                            rowData.unidad || '',
-                            rowData.cantidad !== undefined ? String(rowData.cantidad).replace('.', ',') : '0'
-                        ]
-                    ]
+                    accessToken: token, sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs', range: `Hoja 1!A${rowIndex}:D${rowIndex}`,
+                    values: [[rowData.item || '', rowData.descripcion || '', rowData.unidad || '', rowData.cantidad !== undefined ? String(rowData.cantidad).replace('.', ',') : '0']]
                 })
             });
-
-            if (!req.ok) throw new Error("HTTP error al actualizar Google Sheets");
+            if (!req.ok) throw new Error("Error actualizando Sheets");
             return { success: true, timestamp: new Date().toISOString() };
-        } catch (error) {
-            console.error("Fallo actualizando la hoja real", error);
-            throw error;
-        }
+        } catch (error) { return { success: false, error: error.message }; }
     }
 
     async addMaterialToSheet(rowData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
+        const token = await this._getBackendToken()
+        if (!token) return { success: true, response: 'mock' }
         try {
             const req = await fetch(`${API_BASE_URL}/api/google/sheets/append`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
-                    sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
-                    values: [
-                        [
-                            rowData.item || '',
-                            rowData.descripcion || '',
-                            rowData.unidad || '',
-                            rowData.cantidad !== undefined ? String(rowData.cantidad).replace('.', ',') : '0'
-                        ]
-                    ]
+                    accessToken: token, sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
+                    values: [[rowData.item || '', rowData.descripcion || '', rowData.unidad || '', rowData.cantidad !== undefined ? String(rowData.cantidad).replace('.', ',') : '0']]
                 })
             });
-
-            if (!req.ok) throw new Error("HTTP error al añadir a Google Sheets");
-            const res = await req.json();
-            return { success: true, response: res.response };
-        } catch (error) {
-            console.error("Error añadiendo material a Sheet:", error);
-            throw error;
-        }
+            if (!req.ok) throw new Error("Error añadiendo a Sheets");
+            return { success: true, response: (await req.json()).response };
+        } catch (error) { return { success: false, error: error.message }; }
     }
 
     async deleteMaterialFromSheet(rowIndexInUI) {
-        if (!this.isConnected) throw new Error("No autenticado en Google")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
-        // UI rowIndex 0 es el primer material después del encabezado.
-        // Excel: Fila 1 = Encabezado. Fila 2 = Primer dato.
-        // batchUpdate DeleteDimension: 0-based index. Fila 1 es index 0. Fila 2 es index 1.
+        const token = await this._getBackendToken()
+        if (!token) return { success: true }
         const googleRowIndex = rowIndexInUI + 1;
-
         try {
             const req = await fetch(`${API_BASE_URL}/api/google/sheets/delete`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    accessToken: token,
-                    sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
-                    rowIndex: googleRowIndex
-                })
+                body: JSON.stringify({ accessToken: token, sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs', rowIndex: googleRowIndex })
             });
-
-            if (!req.ok) throw new Error("HTTP error al eliminar de Google Sheets");
+            if (!req.ok) throw new Error("Error eliminando de Sheets");
             return { success: true };
-        } catch (error) {
-            console.error("Error eliminando material de Sheet:", error);
-            throw error;
-        }
+        } catch (error) { return { success: false, error: error.message }; }
     }
 
-    // SIMULACIÓN GOOGLE DOCS & DRIVE (AHORA LLAMA AL PROXY REAL)
+    // GOOGLE DOCS & DRIVE
     async generateDocsFromTemplates(procesoInfo) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
+        const token = await this._getBackendToken()
+        if (!token) {
+            return new Promise(resolve => setTimeout(() => resolve({
+                success: true, folderUrl: 'https://drive.google.com/drive/my-drive',
+                documents: [{ name: 'Estudio Previo (Demo)', type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' }]
+            }), 1500))
+        }
 
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
-        // Para este proyecto, el admin tendría estos IDs preconfigurados en PanelAdminGoogle
-        // Aquí le pasamos cualquier ID público/compartido creado por el usuario como plantilla
-
-        // Mapeo de placeholders a enviar a Docs: {{fecha}}, {{numero}}, {{objeto}}, {{lugar}}, {{valor}}
         const rawFormData = {
             fecha: procesoInfo.fecha || new Date().toISOString().split('T')[0],
             numero: procesoInfo.numero_proceso || 'Borrador',
@@ -213,128 +139,73 @@ class GoogleIntegrationService {
             valor: Number(procesoInfo.valor_estimado || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })
         }
 
-        console.log("DEBUG: Datos enviados para generación de documentos:", rawFormData);
-
         try {
-            // Único Documento Oficial: Estudio de Conveniencia y Oportunidad
             const estudioRes = await fetch(`${API_BASE_URL}/api/google/generate-document`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    accessToken: token,
-                    templateId: '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0', // Template Principal
-                    newDocumentName: `Estudio de Conveniencia - ${rawFormData.numero}`,
-                    formData: rawFormData
-                })
+                body: JSON.stringify({ accessToken: token, templateId: '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0', newDocumentName: `Estudio de Conveniencia - ${rawFormData.numero}`, formData: rawFormData })
             });
-
-            if (!estudioRes.ok) {
-                if (estudioRes.status === 401) {
-                    throw new Error("Tu sesión de Google ha expirado. Por favor, ve a 'Configuración de Perfil' y vuelve a conectar tu cuenta.");
-                }
-                throw new Error(`Error en Proxy backend al generar documento (Status: ${estudioRes.status})`);
-            }
-
-            const contentType = estudioRes.headers.get("content-type");
-            if (!contentType?.includes("application/json")) {
-                throw new Error("El servidor proxy no devolvió una respuesta JSON válida.");
-            }
-
-            const estudioData = await estudioRes.json();
-
+            if (!estudioRes.ok) throw new Error(`Error generando documento`);
+            const data = await estudioRes.json();
             return {
-                success: true,
-                folderUrl: 'https://drive.google.com/drive/my-drive',
-                documents: [
-                    {
-                        name: `Estudio de Conveniencia - ${rawFormData.numero}`,
-                        type: 'doc',
-                        url: estudioData.documentUrl || 'https://docs.google.com/'
-                    }
-                ]
+                success: true, folderUrl: 'https://drive.google.com/drive/my-drive',
+                documents: [{ name: `Estudio - ${rawFormData.numero}`, type: 'doc', url: data.documentUrl || 'https://docs.google.com/' }]
             }
-
         } catch (err) {
-            console.warn("Fallo en proxy real, usando respaldo fallback (MOCK):", err.message);
-            // Si el backend no está corriendo, caemos en el behavior de demo:
-            return new Promise((resolve) => setTimeout(() => resolve({
-                success: true,
-                documents: [
-                    { name: `Estudio Previo`, type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' },
-                    { name: `Minuta`, type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' },
-                    { name: `CDP`, type: 'pdf', url: 'https://docs.google.com/document/u/0/create?rm=minimal' }
-                ]
+            return new Promise(resolve => setTimeout(() => resolve({
+                success: true, documents: [{ name: 'Estudio Previo', type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' }]
             }), 2000));
         }
     }
+
     async fillSpecificTemplate(formData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
-        const rawData = {
-            fecha: formData.fecha || '',
-            objeto: formData.descripcion_objeto || '',
-            numero: formData.numero_proceso || '',
+        const token = await this._getBackendToken()
+        if (!token) return { success: true, url: 'https://docs.google.com/document/u/0/create?rm=minimal' }
+        
+        const rawFormData = {
+            fecha: formData.fecha || new Date().toISOString().split('T')[0],
+            numero: formData.numero_proceso || 'Borrador',
+            objeto: formData.descripcion_objeto || 'Sin detalle',
+            lugar: formData.lugar_ejecucion || 'No especificado',
             valor: Number(formData.valor_estimado || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/docs/llenar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    accessToken: token,
-                    formData: rawData
+            // Utilizamos el mismo endpoint de generación de documentos pero con el nombre "Acta de Inicio"
+            // Nota: Aquí podrías cambiar el templateId por el ID real de la plantilla del Acta de Inicio.
+            // Por ahora usaremos la misma plantilla como demostración.
+            const response = await fetch(`${API_BASE_URL}/api/google/generate-document`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    accessToken: token, 
+                    templateId: '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0', // <-- ID de plantilla acta
+                    newDocumentName: `Acta de Inicio - ${rawFormData.numero}`,
+                    formData: rawFormData 
                 })
             });
-
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const data = await response.json();
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error("Tu sesión de Google ha expirado. Por favor, ve a 'Configuración de Perfil' y vuelve a conectar tu cuenta.");
-                    }
-                    throw new Error(data.error || `Error del servidor (${response.status})`);
-                }
-                return data;
-            } else {
-                const text = await response.text();
-                console.error("DEBUG: Respuesta no JSON recibida:", text.substring(0, 200));
-                throw new Error(`El servidor de Google Proxy devolvió un error (HTML/Texto). Asegúrate de que el servidor esté corriendo y actualizado.`);
-            }
-        } catch (error) {
+            
+            if (!response.ok) throw new Error("Error en backend");
+            const data = await response.json();
+            return { success: true, url: data.documentUrl };
+            
+        } catch (error) { 
             console.error("Error en fillSpecificTemplate:", error);
-            throw error;
+            return { success: false, url: 'https://docs.google.com/document/u/0/create?rm=minimal' } 
         }
     }
 
     async fillLiveTestTemplate(formData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
+        const token = await this._getBackendToken()
+        if (!token) return { success: true }
         try {
             const response = await fetch(`${API_BASE_URL}/api/google/test-new-doc`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    accessToken: token,
-                    sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
-                    formData: formData
-                })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessToken: token, sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs', formData: formData })
             });
-
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "Error en diagnóstico");
+            if (!response.ok) throw new Error(data.error);
             return data;
-        } catch (error) {
-            console.error("Error en fillLiveTestTemplate:", error);
-            throw error;
-        }
+        } catch (error) { return { success: false, error: error.message } }
     }
 }
 

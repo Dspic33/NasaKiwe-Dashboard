@@ -17,49 +17,26 @@ import { useGoogleLogin, googleLogout } from '@react-oauth/google'
 import { googleService } from '../../services/GoogleIntegrationService'
 import './Layout.css'
 
-const Sidebar = ({ isOpen, toggleSidebar, onNavigate }) => {
+const Sidebar = ({ isOpen, toggleSidebar, onNavigate, currentUser }) => {
     const [activeItem, setActiveItem] = useState('Perfil')
-    const [isGoogleConnected, setIsGoogleConnected] = useState(false)
-
     useEffect(() => {
-        setIsGoogleConnected(!!localStorage.getItem('real_google_access_token'))
-    }, [])
-
-    const handleGoogleLogin = useGoogleLogin({
-        onSuccess: (codeResponse) => {
-            console.log("Login Exitoso desde Sidebar:", codeResponse)
-            localStorage.setItem('real_google_access_token', codeResponse.access_token)
-            setIsGoogleConnected(true)
+        // Inicializar el estado de conexión de Google si existe en el cache
+        if (localStorage.getItem('real_google_access_token')) {
             googleService.isConnected = true
-            alert("¡Conexión exitosa con Google!")
-        },
-        onError: (error) => {
-            console.log('Login Falló:', error)
-            alert("Error al conectar con Google")
-        },
-        scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets'
-    });
-
-    const handleDisconnect = () => {
-        googleLogout()
-        localStorage.removeItem('real_google_access_token')
-        setIsGoogleConnected(false)
-        googleService.isConnected = false
-    }
+        }
+    }, [])
 
     const menuItems = [
         { name: 'Dashboard', icon: <LayoutDashboard size={20} />, id: 'portal' },
-        { name: 'Contratos', icon: <FileText size={20} />, id: 'contratos' },
+        { name: 'Contratos', icon: <FileText size={20} />, id: 'contratos', roles: ['asesor_vivienda', 'juridico', 'directora', 'admin'] },
+        { name: 'Bitácora', icon: <Table size={20} />, id: 'bitacora', roles: ['asesor_vivienda', 'inspector', 'residente', 'contratista', 'admin'] },
+        { name: 'Inspector', icon: <Building2 size={20} />, id: 'inspector', roles: ['inspector', 'admin'] },
         { name: 'Configuración', icon: <Settings size={20} />, id: 'config' },
     ]
 
     const handleNavClick = (item) => {
         setActiveItem(item.name)
-        if (item.id === 'portal') {
-            onNavigate('portal')
-        } else if (item.id === 'contratos') {
-            onNavigate('contratos')
-        }
+        onNavigate(item.id)
     }
 
     return (
@@ -78,7 +55,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavigate }) => {
 
                 <nav className="sidebar-nav">
                     <ul>
-                        {menuItems.map((item) => (
+                        {menuItems.filter(item => !item.roles || (currentUser && item.roles.includes(currentUser.rol))).map((item) => (
                             <li key={item.id}>
                                 <button
                                     className={`nav-item ${activeItem === item.name ? 'active' : ''}`}
@@ -96,27 +73,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavigate }) => {
                 </nav>
 
                 <div style={{ padding: '20px', marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                    {isGoogleConnected ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10B981', fontSize: '14px', fontWeight: 'bold' }}>
-                                <CheckCircle size={16} /> Google Conectado
-                            </div>
-                            <button
-                                onClick={handleDisconnect}
-                                style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '8px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontSize: '13px' }}
-                            >
-                                <LogOut size={14} /> Desconectar
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={() => handleGoogleLogin()}
-                            style={{ width: '100%', background: '#4285F4', color: 'white', border: 'none', padding: '10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                        >
-                            <span style={{ background: 'white', color: '#4285F4', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>G</span>
-                            Conectar Google
-                        </button>
-                    )}
+                    {/* Botón de Google removido para no forzar conexión */}
                 </div>
 
                 <div className="sidebar-footer">

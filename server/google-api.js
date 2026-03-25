@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import googleRoutes from './routes/googleRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { authMiddleware } from './middleware/authMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -39,11 +40,21 @@ app.get('/status', (req, res) => {
     res.json({ status: 'NASA KIWE API is running (Modular)', version: '2.0.0' });
 });
 
-// API Routes protegidas
-app.use('/api/google', authMiddleware, googleRoutes);
+// ── Rutas OAuth (públicas, sin authMiddleware) ──────────────────────
+app.use('/auth/google', authRoutes);
+
+// ── Ruta pública para obtener token auto-renovado ──────────────────
+// Se maneja directamente en googleRoutes.js
+
+// ── API Routes protegidas con token institucional ──────────────────
+app.use('/api/google', (req, res, next) => {
+    // La ruta /token no necesita authMiddleware (usa refresh_token del sistema)
+    if (req.path === '/token') return next();
+    return authMiddleware(req, res, next);
+}, googleRoutes);
 
 // SPA Fallback
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
     res.sendFile(path.resolve(__dirname, '../dist/index.html'), (err) => {
         if (err) {
             res.status(200).send('NASA KIWE Backend Operational. Check frontend deployment.');
@@ -54,4 +65,5 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor modular corriendo en puerto ${PORT}`);
+    console.log(`🔐 OAuth Google: http://localhost:${PORT}/auth/google/login`);
 });

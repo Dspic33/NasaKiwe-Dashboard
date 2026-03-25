@@ -529,9 +529,54 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                     supabase.from('evidencias_obra').select('*')
                 ]);
                 
-                if (projsRes.data) setProyectosDB(projsRes.data);
-                if (vivsRes.data) setAllViviendas(vivsRes.data);
-                if (evidsRes.data) setAllEvidencias(evidsRes.data);
+                let proyectosData = projsRes.data || [];
+                let viviendasGlobal = vivsRes.data || [];
+                let evidenciasGlobal = evidsRes.data || [];
+                
+                // Inyectar proyecto de prueba si no existe
+                if (proyectosData.length === 0 || !proyectosData.some(p => p.id === 'PRUEBA-VAL-391')) {
+                    const mockProject = {
+                        id: 'PRUEBA-VAL-391',
+                        numero_proceso: 'CD-VIV-2026-N391',
+                        nombre: 'Proyecto Habitacional Popayán Fase II',
+                        descripcion_objeto: 'RECONSTRUCCIÓN DE VIVIENDAS EN SITIO PROPIO: Proyecto Habitacional Popayán Fase II.',
+                        objetivo: 'Mejoramiento de la calidad de vida de 50 familias mediante la reconstrucción de viviendas en sitio propio.',
+                        ubicacion: 'Popayán, Cauca',
+                        municipio: 'Popayán',
+                        resguardo: 'Coconuco',
+                        valor_estimado: 125400000,
+                        presupuesto_total: 125400000,
+                        contratista: 'CONSORCIO VIVIENDA 2026',
+                        supervisor: 'Arq. Juan Camilo Manzano T.',
+                        plazo: '12 meses',
+                        fecha_inicio: '2026-03-01',
+                        estado: 'activo',
+                        created_at: new Date().toISOString()
+                    };
+                    proyectosData = [mockProject, ...proyectosData];
+
+                    // Inyectar viviendas mock para cálculos globales
+                    const mockViviendas = [
+                        { id: 'gv1', proyecto_id: 'PRUEBA-VAL-391', numero_lote: '1', beneficiario: 'Beneficiario Prueba 1', municipio: 'Popayán' },
+                        { id: 'gv2', proyecto_id: 'PRUEBA-VAL-391', numero_lote: '2', beneficiario: 'Beneficiario Prueba 2', municipio: 'Popayán' },
+                        { id: 'gv3', proyecto_id: 'PRUEBA-VAL-391', numero_lote: '3', beneficiario: 'Beneficiario Prueba 3', municipio: 'Popayán' }
+                    ];
+                    viviendasGlobal = [...mockViviendas, ...viviendasGlobal];
+
+                    // Inyectar evidencias mock para cálculos globales
+                    const mockEvidencias = [
+                        { id: 'ge1', proyecto_id: 'PRUEBA-VAL-391', vivienda_num: '1', actividad_id: ACTIVIDADES_CATALOGO[0].id, progreso: 100 },
+                        { id: 'ge2', proyecto_id: 'PRUEBA-VAL-391', vivienda_num: '1', actividad_id: ACTIVIDADES_CATALOGO[4].id, progreso: 50 },
+                        { id: 'ge3', proyecto_id: 'PRUEBA-VAL-391', vivienda_num: '2', actividad_id: ACTIVIDADES_CATALOGO[0].id, progreso: 80 }
+                    ];
+                    evidenciasGlobal = [...mockEvidencias, ...evidenciasGlobal];
+                    
+                    console.log('🧪 Mock: Datos globales sincronizados para Dashboard.');
+                }
+
+                setProyectosDB(proyectosData);
+                setAllViviendas(viviendasGlobal);
+                setAllEvidencias(evidenciasGlobal);
             } catch (error) {
                 console.error("Error cargando datos globales:", error);
             }
@@ -553,7 +598,19 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                 .eq('proyecto_id', selectedProyecto.id)
                 .order('numero_lote', { ascending: true });
             
-            if (!error && data) setViviendasDB(data);
+            let viviendasData = data || [];
+
+            // Inyectar viviendas de prueba para el proyecto mock
+            if (selectedProyecto.id === 'PRUEBA-VAL-391' && viviendasData.length === 0) {
+                viviendasData = [
+                    { id: 'v1', proyecto_id: 'PRUEBA-VAL-391', numero_lote: '1', beneficiario: 'Beneficiario Prueba 1', avance_obra: 35 },
+                    { id: 'v2', proyecto_id: 'PRUEBA-VAL-391', numero_lote: '2', beneficiario: 'Beneficiario Prueba 2', avance_obra: 15 },
+                    { id: 'v3', proyecto_id: 'PRUEBA-VAL-391', numero_lote: '3', beneficiario: 'Beneficiario Prueba 3', avance_obra: 80 }
+                ];
+                console.log('🧪 Mock: Inyectadas viviendas de prueba para el proyecto de prueba.');
+            }
+            
+            setViviendasDB(viviendasData);
         };
         fetchViviendas();
     }, [selectedProyecto]);
@@ -574,6 +631,17 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
         if (!selectedProyecto) return;
 
         const cargarEvidencias = async () => {
+            if (selectedProyecto.id === 'PRUEBA-VAL-391') {
+                const mockEvidencias = [
+                    { id: 'e1', proyecto_id: 'PRUEBA-VAL-391', titulo: 'Cimentación terminada', avance_fisico: 20, valor_ejecutado: 15000000, created_at: '2026-03-05T10:00:00Z' },
+                    { id: 'e2', proyecto_id: 'PRUEBA-VAL-391', titulo: 'Mampostería nivel 1', avance_fisico: 45, valor_ejecutado: 35000000, created_at: '2026-03-12T10:00:00Z' },
+                    { id: 'e3', proyecto_id: 'PRUEBA-VAL-391', titulo: 'Instalaciones eléctricas', avance_fisico: 65, valor_ejecutado: 12000000, created_at: '2026-03-20T10:00:00Z' }
+                ];
+                setRegistrosSincronizados(mockEvidencias);
+                setCargandoRegistros(false);
+                return;
+            }
+            
             setCargandoRegistros(true);
             try {
                 const { data, error } = await supabase

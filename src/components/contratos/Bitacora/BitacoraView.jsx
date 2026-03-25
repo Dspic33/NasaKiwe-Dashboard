@@ -1602,7 +1602,7 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                                         </div>
                                         <p className="timeline-desc">{act.descripcion}</p>
 
-                                        {isCompleted && expandedPhotos[act.id] && todosRegistrosActividad.length > 0 && (
+                                        {isStarted && expandedPhotos[act.id] && todosRegistrosActividad.length > 0 && (
                                             <div className="activity-evidence-preview" style={{ background: '#F8FAFC', padding: '15px', borderRadius: '10px', marginTop: '15px', border: '1px solid #E2E8F0' }}>
                                                 {/* MOSTRAR SOLO EL ÚLTIMO REPORTE (Estado Actual) para evitar duplicados visuales */}
                                                 {todosRegistrosActividad.slice(0, 1).map((registro, rIdx) => {

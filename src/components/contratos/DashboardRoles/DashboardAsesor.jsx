@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { FileText, Plus, Search, Filter, Eye, Edit2, AlertCircle, Clock, CheckCircle } from 'lucide-react'
+import { FileText, Plus, Search, Filter, Eye, Edit2, AlertCircle, Clock, CheckCircle, Table } from 'lucide-react'
 import { ESTADOS_CONTRATACION, ESTADOS_LABELS } from '../../../data/contratosMock'
 import '../Contratos.css'
 
-const DashboardAsesor = ({ contratos, currentUser, onStartWizard, onOpenContrato, onClearCache }) => {
+const DashboardAsesor = ({ contratos, currentUser, onStartWizard, onOpenContrato, onClearCache, onViewBitacora }) => {
     const [searchTerm, setSearchTerm] = useState('')
 
     // Filtrar solo los contratos creados por este asesor
@@ -57,9 +57,20 @@ const DashboardAsesor = ({ contratos, currentUser, onStartWizard, onOpenContrato
         }
         if (contrato.estado === ESTADOS_CONTRATACION.APROBADO || contrato.estado === ESTADOS_CONTRATACION.DOCUMENTOS_GENERADOS) {
             return (
-                <button className="btn-success small" onClick={() => onOpenContrato(contrato)}>
-                    <FileText size={14} /> Ver Docs
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <button className="btn-success small" onClick={() => onOpenContrato(contrato)}>
+                        <FileText size={14} /> Ver Docs
+                    </button>
+                    {contrato.bitacora_proyectos_id && (
+                        <button 
+                            className="btn-primary small" 
+                            onClick={() => onViewBitacora(contrato.bitacora_proyectos_id)}
+                            style={{ background: '#2D5F3E' }}
+                        >
+                            <Table size={14} /> Bitácora
+                        </button>
+                    )}
+                </div>
             )
         }
         return (

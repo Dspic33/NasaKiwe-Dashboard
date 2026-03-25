@@ -43,7 +43,7 @@ app.get('/status', (req, res) => {
 app.use('/api/google', authMiddleware, googleRoutes);
 
 // SPA Fallback
-app.get('*', (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.resolve(__dirname, '../dist/index.html'), (err) => {
         if (err) {
             res.status(200).send('NASA KIWE Backend Operational. Check frontend deployment.');

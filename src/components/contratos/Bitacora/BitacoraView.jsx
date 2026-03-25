@@ -67,7 +67,8 @@ const ACTIVIDADES_CATALOGO = [
 ]
 
 
-const BitacoraView = ({ currentUser }) => {
+const BitacoraView = ({ currentUser, initialProjectId = null }) => {
+    const [view, setView] = useState('overview'); // 'overview' o 'project'
     const [proyectosDB, setProyectosDB] = useState([])
     const [selectedProyecto, setSelectedProyecto] = useState(null)
     const [viviendasDB, setViviendasDB] = useState([])
@@ -557,10 +558,21 @@ const BitacoraView = ({ currentUser }) => {
         fetchViviendas();
     }, [selectedProyecto]);
 
+    // Selección inicial si viene una prop de initialProjectId
     useEffect(() => {
-        if (!selectedProyecto || !supabase) return;
+        if (initialProjectId && proyectosDB.length > 0 && !selectedProyecto) {
+            const found = proyectosDB.find(p => p.id === initialProjectId);
+            if (found) {
+                setSelectedProyecto(found);
+                console.log('🎯 Deep-link: Proyecto seleccionado automáticamente:', found.nombre);
+            }
+        }
+    }, [initialProjectId, proyectosDB]);
 
-        // Carga inicial global para calcular métricas de todo el proyecto
+    // Efecto para cargar datos del proyecto seleccionado
+    useEffect(() => {
+        if (!selectedProyecto) return;
+
         const cargarEvidencias = async () => {
             setCargandoRegistros(true);
             try {
@@ -603,7 +615,7 @@ const BitacoraView = ({ currentUser }) => {
             supabase.removeChannel(canal);
             setRealtimeConectado(false);
         };
-    }, [selectedProyecto]);
+    }, [selectedProyecto, supabase]);
 
     const toggleChapter = (cap) => {
         setCollapsedChapters(prev => ({ ...prev, [cap]: !prev[cap] }))

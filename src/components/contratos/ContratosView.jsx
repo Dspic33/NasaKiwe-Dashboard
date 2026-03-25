@@ -7,7 +7,16 @@ import DashboardDirectora from './DashboardRoles/DashboardDirectora'
 import BitacoraView from './Bitacora/BitacoraView'
 import './Contratos.css'
 
-const ContratosView = ({ currentUser, onStartWizard, contratos, onClearCache, initialTab = 'dashboard' }) => {
+const ContratosView = ({ 
+    contratos, 
+    currentUser, 
+    onStartWizard, 
+    onNavigate, 
+    onClearCache, 
+    onViewBitacora,
+    initialTab = 'dashboard',
+    initialProjectId = null
+}) => {
     const [activeTab, setActiveTab] = useState(initialTab)
 
     // Sincronizar el tab activo si cambia la prop initialTab (desde el sidebar)
@@ -31,7 +40,7 @@ const ContratosView = ({ currentUser, onStartWizard, contratos, onClearCache, in
         if (!currentUser) return <div>No ha iniciado sesión</div>;
 
         if (activeTab === 'bitacora') {
-            return <BitacoraView currentUser={currentUser} />
+            return <BitacoraView currentUser={currentUser} initialProjectId={initialProjectId} />
         }
 
         switch (currentUser.rol) {
@@ -43,6 +52,7 @@ const ContratosView = ({ currentUser, onStartWizard, contratos, onClearCache, in
                     onStartWizard={() => onStartWizard(null)}
                     onOpenContrato={handleOpenContrato}
                     onClearCache={onClearCache}
+                    onViewBitacora={onViewBitacora}
                 />
             case ROLES_USUARIO.JURIDICO:
                 return <DashboardJuridico

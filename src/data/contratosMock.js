@@ -46,6 +46,7 @@ export const MOCK_CONTRATOS = [
         materiales: [],
         observaciones_juridico: 'Revisado y aprobado para firma.',
         observaciones_directora: 'Procesar con prioridad.',
+        bitacora_proyectos_id: 'PRUEBA-VAL-391', // ID para pruebas de enlace
         historial_cambios: [
             { fecha: '2026-03-01', usuario: ROLES_USUARIO.ASESOR_VIVIENDA, nombre: 'Arq Juan Camilo Manzano T.', accion: 'Creación' },
             { fecha: '2026-03-02', usuario: ROLES_USUARIO.JURIDICO, nombre: 'Carlos Aztaiza C.', accion: 'Aprobación Jurídica' }

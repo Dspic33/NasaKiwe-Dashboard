@@ -25,6 +25,7 @@ function App() {
     const [selectedArea, setSelectedArea] = useState(null)
     const [selectedRole, setSelectedRole] = useState(null)
     const [currentUser, setCurrentUser] = useState(null)
+    const [selectedBitacoraProjectId, setSelectedBitacoraProjectId] = useState(null)
 
     // Cargar contratos desde Supabase al iniciar
     useEffect(() => {
@@ -33,6 +34,12 @@ function App() {
             try {
                 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
                 const isConfigured = supabase && supabaseUrl && !supabaseUrl.includes('TU_PROYECTO')
+
+                console.log('🔍 Estado de Configuración:', {
+                    supabaseUrl: supabaseUrl ? 'Configurado' : 'FALTANTE',
+                    supabaseClient: supabase ? 'Inicializado' : 'FALLIDO',
+                    isConfigured
+                });
 
                 if (isConfigured) {
                     const { data, error } = await supabase
@@ -256,6 +263,10 @@ function App() {
                     currentUser={currentUser}
                     onNavigate={setView}
                     onClearCache={handleClearCache}
+                    onViewBitacora={(projectId) => {
+                        setSelectedBitacoraProjectId(projectId);
+                        setView('bitacora');
+                    }}
                     onStartWizard={(contrato) => {
                         setSelectedContrato(contrato)
                         setView('wizard')
@@ -326,6 +337,7 @@ function App() {
                     onNavigate={setView}
                     onClearCache={handleClearCache}
                     initialTab="bitacora"
+                    initialProjectId={selectedBitacoraProjectId}
                 />
             case 'inspector':
                 return <InspectorDashboard />

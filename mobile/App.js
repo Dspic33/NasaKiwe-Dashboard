@@ -56,6 +56,7 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [activeSlot, setActiveSlot] = useState(0);
   const [selectedImageForViewer, setSelectedImageForViewer] = useState(null);
+  const [fetchError, setFetchError] = useState(null); // Nuevo estado para errores
   const cameraRef = useRef(null);
 
   // --- ESTADOS RESTAURADOS ---
@@ -84,14 +85,21 @@ export default function App() {
   }, [view]);
 
   const fetchProjects = async () => {
+    setLoading(true);
+    setFetchError(null);
     try {
       const { data, error } = await supabase
         .from('proyectos')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data) setProyectosDB(data);
+      
+      if (error) throw error;
+      setProyectosDB(data || []);
     } catch (err) {
       console.error('Error fetching projects:', err);
+      setFetchError('No se pudieron cargar los proyectos. Verifique su conexión.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,17 +111,20 @@ export default function App() {
   }, [view, selectedProject]);
 
   const fetchHouses = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('viviendas')
         .select('*')
         .eq('proyecto_id', selectedProject.id)
-        .not('beneficiario', 'is', null)
-        .neq('beneficiario', '')
+        // .not('beneficiario', 'is', null) // Relajamos filtros para demo
+        // .neq('beneficiario', '')
         .order('numero_lote', { ascending: true });
       if (!error && data) setViviendasDB(data);
     } catch (err) {
       console.error('Error fetching houses:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -399,6 +410,48 @@ export default function App() {
     }, 1500);
   };
 
+  // Función DEBUG para inyectar proyecto demo si no existe (Sincronizado con Web)
+  const injectDemoData = async () => {
+    setLoading(true);
+    try {
+      // 1. Crear Proyecto (ID de contratosMock.js)
+      const projectID = '6f8d3b2a-5c1a-4e8b-9d7a-1b3c4d5e6f7a';
+      const { error: pError } = await supabase
+        .from('proyectos')
+        .upsert({
+          id: projectID,
+          nombre: 'Proyecto Habitacional Popayán Fase II',
+          municipio: 'Popayán',
+          resguardo: 'Pueblo Nasa',
+          numero_proceso: 'CD-VIV-2026-N391',
+          estado: 'ACTIVO'
+        });
+
+      if (pError) throw pError;
+
+      // 2. Crear Viviendas de ejemplo (Lote 01 al 03)
+      const viviendas = [
+        { id: '6f8d3b2a-5c1a-4e8b-9d7a-1b3c4d5e6f71', proyecto_id: projectID, numero_lote: '01', beneficiario: 'María Fernanda Castro', municipio: 'Popayán', estado: 'EN_PROGRESO' },
+        { id: '6f8d3b2a-5c1a-4e8b-9d7a-1b3c4d5e6f72', proyecto_id: projectID, numero_lote: '02', beneficiario: 'Juan Camilo Manzano', municipio: 'Popayán', estado: 'PENDIENTE' },
+        { id: '6f8d3b2a-5c1a-4e8b-9d7a-1b3c4d5e6f73', proyecto_id: projectID, numero_lote: '03', beneficiario: 'Claudia Jiménez', municipio: 'Popayán', estado: 'PENDIENTE' }
+      ];
+
+      const { error: vError } = await supabase
+        .from('viviendas')
+        .upsert(viviendas);
+
+      if (vError) throw vError;
+
+      Alert.alert('Éxito', 'Proyecto Demo (Sincronizado) inyectado correctamente. Recargando...');
+      fetchProjects();
+    } catch (err) {
+      console.error('Error injecting demo data:', err);
+      Alert.alert('Error', 'No se pudo inyectar el demo: ' + (err.message || 'Error de red'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Manejador centralizado de navegación
   const navigateTo = (newView) => {
     setView(newView);
@@ -587,15 +640,35 @@ export default function App() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.houseTitle}>{proj.nombre}</Text>
-                <Text style={styles.houseStatus}>{proj.municipio} - {proj.resguardo}</Text>
+                <Text style={styles.houseStatus}>{proj.municipio || proj.ubicacion || 'Sin ubicación'} - {proj.resguardo || 'Sin resguardo'}</Text>
               </View>
               <ChevronRight color="#CBD5E1" size={20} />
             </TouchableOpacity>
           ))
+        ) : fetchError ? (
+          <View style={styles.emptyState}>
+            <AlertCircle color={COLORS.error} size={48} />
+            <Text style={{ marginTop: 10, color: COLORS.error, textAlign: 'center' }}>{fetchError}</Text>
+            <TouchableOpacity style={[styles.primaryBtn, { marginTop: 20 }]} onPress={fetchProjects}>
+              <Text style={styles.btnText}>Reintentar Conexión</Text>
+            </TouchableOpacity>
+          </View>
+        ) : loading ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator color={COLORS.primary} size="large" />
+            <Text style={{ marginTop: 10, color: COLORS.secondary }}>Cargando proyectos...</Text>
+          </View>
         ) : (
           <View style={styles.emptyState}>
-            <ActivityIndicator color={COLORS.primary} />
-            <Text style={{ marginTop: 10, color: COLORS.secondary }}>Cargando proyectos...</Text>
+            <Home color="#CBD5E1" size={48} />
+            <Text style={{ marginTop: 10, color: COLORS.secondary, textAlign: 'center' }}>No se encontraron proyectos activos.</Text>
+            
+            <TouchableOpacity 
+              style={[styles.primaryBtn, { marginTop: 20, backgroundColor: COLORS.secondary }]} 
+              onPress={injectDemoData}
+            >
+              <Text style={styles.btnText}>Inicializar Proyecto Demo</Text>
+            </TouchableOpacity>
           </View>
         )}
       </ScrollView>

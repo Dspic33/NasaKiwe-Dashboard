@@ -3,7 +3,7 @@ import { FileText, Plus, Search, Filter, Eye, Edit2, AlertCircle, Clock, CheckCi
 import { ESTADOS_CONTRATACION, ESTADOS_LABELS } from '../../../data/contratosMock'
 import '../Contratos.css'
 
-const DashboardAsesor = ({ contratos, currentUser, onStartWizard, onOpenContrato }) => {
+const DashboardAsesor = ({ contratos, currentUser, onStartWizard, onOpenContrato, onClearCache }) => {
     const [searchTerm, setSearchTerm] = useState('')
 
     // Filtrar solo los contratos creados por este asesor
@@ -76,10 +76,24 @@ const DashboardAsesor = ({ contratos, currentUser, onStartWizard, onOpenContrato
                     <h1>Mis Procesos de Contratación</h1>
                     <p>Gestiona y haz seguimiento a los procesos que has iniciado.</p>
                 </div>
-                <button className="btn-primary" onClick={onStartWizard}>
-                    <Plus size={20} />
-                    <span>Nuevo Proceso</span>
-                </button>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                        className="btn-secondary" 
+                        onClick={() => {
+                            if (window.confirm('¿Deseas limpiar la caché local? Se recargarán los datos desde el servidor.')) {
+                                onClearCache();
+                            }
+                        }}
+                        style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db' }}
+                    >
+                        <Clock size={18} />
+                        <span>Limpiar Caché</span>
+                    </button>
+                    <button className="btn-primary" onClick={onStartWizard}>
+                        <Plus size={20} />
+                        <span>Nuevo Proceso</span>
+                    </button>
+                </div>
             </div>
 
             <div className="kpi-cards-container">

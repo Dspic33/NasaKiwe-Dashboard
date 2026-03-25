@@ -107,6 +107,13 @@ function App() {
         if (mainContent) mainContent.scrollTop = 0;
     }, [view]);
 
+    const handleClearCache = () => {
+        console.log('🧹 Limpiando caché local...');
+        localStorage.removeItem('nasa_kiwe_contratos');
+        // Forzar recarga de la página para que el useEffect de carga se dispare limpio
+        window.location.reload();
+    };
+
     const handleUpdateContrato = async (updatedContrato, shouldNavigate = true) => {
         if (!updatedContrato) {
             if (shouldNavigate) setView('contratos');
@@ -248,6 +255,7 @@ function App() {
                     contratos={contratos}
                     currentUser={currentUser}
                     onNavigate={setView}
+                    onClearCache={handleClearCache}
                     onStartWizard={(contrato) => {
                         setSelectedContrato(contrato)
                         setView('wizard')
@@ -316,6 +324,7 @@ function App() {
                     contratos={contratos}
                     currentUser={currentUser}
                     onNavigate={setView}
+                    onClearCache={handleClearCache}
                     initialTab="bitacora"
                 />
             case 'inspector':

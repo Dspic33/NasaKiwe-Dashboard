@@ -229,15 +229,16 @@ class GoogleIntegrationService {
             });
 
             if (!estudioRes.ok) {
+                const errorData = await estudioRes.json().catch(() => ({}));
+                const errorMessage = errorData.error || `Error del servidor (${estudioRes.status})`;
+
                 if (estudioRes.status === 401) {
                     throw new Error("Tu sesión de Google ha expirado. Por favor, ve a 'Configuración de Perfil' y vuelve a conectar tu cuenta.");
                 }
-                throw new Error(`Error en Proxy backend al generar documento (Status: ${estudioRes.status})`);
-            }
-
-            const contentType = estudioRes.headers.get("content-type");
-            if (!contentType?.includes("application/json")) {
-                throw new Error("El servidor proxy no devolvió una respuesta JSON válida.");
+                if (estudioRes.status === 403) {
+                    throw new Error(`Acceso denegado: ${errorMessage}. Verifique si su cuenta tiene permisos en Drive.`);
+                }
+                throw new Error(`Error en Proxy backend: ${errorMessage}`);
             }
 
             const estudioData = await estudioRes.json();
@@ -255,16 +256,26 @@ class GoogleIntegrationService {
             }
 
         } catch (err) {
-            console.warn("Fallo en proxy real, usando respaldo fallback (MOCK):", err.message);
-            // Si el backend no está corriendo, caemos en el behavior de demo:
-            return new Promise((resolve) => setTimeout(() => resolve({
-                success: true,
-                documents: [
-                    { name: `Estudio Previo`, type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' },
-                    { name: `Minuta`, type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' },
-                    { name: `CDP`, type: 'pdf', url: 'https://docs.google.com/document/u/0/create?rm=minimal' }
-                ]
-            }), 2000));
+            // Solo usamos el fallback de MOCK si el servidor local ni siquiera responde (ERR_CONNECTION_REFUSED)
+            // o si es una URL de localhost. En producción (Render), queremos ver el error real.
+            const isLocalhost = API_BASE_URL.includes('localhost');
+            const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
+
+            if (isLocalhost && isNetworkError) {
+                console.warn("Fallo en proxy local, usando respaldo fallback (MOCK) para desarrollo:", err.message);
+                return new Promise((resolve) => setTimeout(() => resolve({
+                    success: true,
+                    documents: [
+                        { name: `Estudio Previo (DEMO)`, type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' },
+                        { name: `Minuta (DEMO)`, type: 'doc', url: 'https://docs.google.com/document/u/0/create?rm=minimal' },
+                        { name: `CDP (DEMO)`, type: 'pdf', url: 'https://docs.google.com/document/u/0/create?rm=minimal' }
+                    ]
+                }), 2000));
+            }
+
+            // En cualquier otro caso (especialmente en producción), relanzar el error para que el usuario lo vea
+            console.error("Error crítico en generación de documentos:", err.message);
+            throw err;
         }
     }
     async fillSpecificTemplate(formData) {

@@ -14,7 +14,7 @@ export async function generateDocument(accessToken, templateId, formData, newDoc
     const docs = google.docs({ version: 'v1', ...options });
     const sheets = google.sheets({ version: 'v4', auth });
 
-    const rootFolderId = '11_IB0SzUixT42NZnccjhO8jG0KQSh7WK';
+    const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || 'root';
     const folderName = `Expediente ${formData?.numero || 'Generado'}`;
 
     // 1. Obtener/Crear carpeta

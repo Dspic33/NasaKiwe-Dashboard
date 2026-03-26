@@ -5,7 +5,8 @@ import { googleService } from '../../services/GoogleIntegrationService'
 const TemplateViewer = () => {
     // ID de la plantilla maestra de Google Docs
     const masterTemplateId = '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0';
-    const masterDocUrl = `https://docs.google.com/viewer?srcid=${masterTemplateId}&pid=explorer&efh=false&a=v&chrome=false&embedded=true`;
+    // URL de previsualización nativa de Google Drive - Más robusta para IFrames externos
+    const masterDocUrl = `https://drive.google.com/file/d/${masterTemplateId}/preview`;
 
     const [currentDocUrl, setCurrentDocUrl] = useState(masterDocUrl);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -46,14 +47,17 @@ const TemplateViewer = () => {
             const response = await googleService.fillSpecificTemplate(formDataAdapter);
 
             if (response.success) {
-                setCurrentDocUrl(response.url);
+                // Para el documento generado usamos /preview de Docs (que permite rm=minimal)
+                // Pero si falla, el usuario tiene el botón de "Abrir en Google Docs"
+                const finalUrl = response.url.replace('/edit', '/preview');
+                setCurrentDocUrl(finalUrl);
                 setSuccessMessage("¡Documento generado y llenado con éxito!");
             } else {
                 throw new Error(response.error || "Error al generar el documento");
             }
         } catch (err) {
             console.error(err);
-            setError(err.message || "Error al conectar con el servicio de Google. Revisa tu perfil.");
+            setError(err.message || "Error al conectar con el servidor. Verifica que las variables de entorno en Render estén configuradas.");
         } finally {
             setIsGenerating(false);
         }
@@ -69,60 +73,34 @@ const TemplateViewer = () => {
                     </h3>
                 </div>
                 <div className="card-body" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto' }}>
-                    <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
-                        Ingresa los valores para reemplazar las etiquetas <code>{"{{...}}"}</code> en la plantilla.
+                    <div style={{ background: '#f0f9ff', borderLeft: '4px solid #0ea5e9', padding: '10px', fontSize: '12px' }}>
+                        <p style={{ margin: 0, color: '#0369a1' }}>
+                            <b>Nota Producción:</b> Si ves un error de bloqueo, asegúrate de estar logueado en Google o usa el botón "Abrir" arriba a la derecha.
+                        </p>
+                    </div>
+                    
+                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
+                        Ingresa los valores para reemplazar las etiquetas <code>{"{{...}}"}</code>.
                     </p>
 
                     <div className="form-group">
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Fecha ({"{{fecha}}"}):</label>
-                        <input
-                            type="text"
-                            name="fecha"
-                            value={tags.fecha}
-                            onChange={handleInputChange}
-                            placeholder="Ej: 23 de febrero de 2026"
-                            className="form-control"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
-                        />
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Fecha:</label>
+                        <input type="text" name="fecha" value={tags.fecha} onChange={handleInputChange} className="form-control" />
                     </div>
 
                     <div className="form-group">
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Número de Contrato ({"{{numero}}"}):</label>
-                        <input
-                            type="text"
-                            name="numero"
-                            value={tags.numero}
-                            onChange={handleInputChange}
-                            placeholder="Ej: CD-VIV-2026-001"
-                            className="form-control"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
-                        />
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Número Contrato:</label>
+                        <input type="text" name="numero" value={tags.numero} onChange={handleInputChange} className="form-control" />
+                    </div>
+
+                    <div className="form-group" style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Objeto:</label>
+                        <textarea name="objeto" value={tags.objeto} onChange={handleInputChange} rows="4" className="form-control"></textarea>
                     </div>
 
                     <div className="form-group">
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Objeto del Contrato ({"{{objeto}}"}):</label>
-                        <textarea
-                            name="objeto"
-                            value={tags.objeto}
-                            onChange={handleInputChange}
-                            rows="4"
-                            placeholder="Describe el objeto del contrato aquí..."
-                            className="form-control"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px', resize: 'none', lineHeight: '1.5' }}
-                        ></textarea>
-                    </div>
-
-                    <div className="form-group">
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Valor Total ({"{{valor}}"}):</label>
-                        <input
-                            type="number"
-                            name="valor"
-                            value={tags.valor}
-                            onChange={handleInputChange}
-                            placeholder="Ej: 15000000"
-                            className="form-control"
-                            style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
-                        />
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '6px', color: '#374151' }}>Valor Total:</label>
+                        <input type="number" name="valor" value={tags.valor} onChange={handleInputChange} className="form-control" />
                     </div>
 
                     <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -130,20 +108,10 @@ const TemplateViewer = () => {
                             className="btn-primary"
                             onClick={handleSave}
                             disabled={isGenerating}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                gap: '10px',
-                                fontSize: '15px',
-                                background: '#10B981', // Verde éxito para destacar
-                                border: 'none'
-                            }}
+                            style={{ width: '100%', padding: '12px', display: 'flex', justifyContent: 'center', gap: '10px', background: '#10B981' }}
                         >
                             {isGenerating ? <RefreshCw size={18} className="spin" /> : <Save size={18} />}
-                            {isGenerating ? 'Generando Contrato...' : 'Guardar y Llenar Plantilla'}
+                            {isGenerating ? 'Generando...' : 'Generar Contrato'}
                         </button>
 
                         <button
@@ -153,21 +121,21 @@ const TemplateViewer = () => {
                                 setSuccessMessage(null);
                                 setError(null);
                             }}
-                            style={{ width: '100%', fontSize: '13px', padding: '8px' }}
+                            style={{ width: '100%', fontSize: '12px', padding: '8px' }}
                         >
-                            Ver Plantilla Original (Sin Cambios)
+                            Resetear Vista
                         </button>
                     </div>
 
                     {successMessage && (
-                        <div style={{ color: '#065F46', background: '#D1FAE5', padding: '12px', borderRadius: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #A7F3D0' }}>
-                            <CheckCircle size={18} /> {successMessage}
+                        <div style={{ color: '#065F46', background: '#D1FAE5', padding: '12px', borderRadius: '6px', fontSize: '13px', border: '1px solid #A7F3D0' }}>
+                            {successMessage}
                         </div>
                     )}
 
                     {error && (
-                        <div style={{ color: '#991B1B', background: '#FEE2E2', padding: '12px', borderRadius: '6px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #FECACA' }}>
-                            <AlertCircle size={18} /> {error}
+                        <div style={{ color: '#991B1B', background: '#FEE2E2', padding: '12px', borderRadius: '6px', fontSize: '13px', border: '1px solid #FECACA' }}>
+                            {error}
                         </div>
                     )}
                 </div>
@@ -182,32 +150,22 @@ const TemplateViewer = () => {
                             {currentDocUrl.includes(masterTemplateId) ? 'PREVISUALIZACIÓN: Plantilla Maestra' : 'RESULTADO: Documento Generado'}
                         </span>
                     </div>
-                    <a
-                        href={currentDocUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                            color: 'var(--color-primario)',
-                            fontSize: '13px',
-                            fontWeight: '700',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            textDecoration: 'none',
-                            padding: '6px 12px',
-                            borderRadius: '4px',
-                            background: '#fff',
-                            border: '1px solid #e2e8f0'
-                        }}
-                    >
-                        <ExternalLink size={14} /> Abrir en Google Docs
-                    </a>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                         <a
+                            href={currentDocUrl.replace('/preview', '/edit').replace('/viewer?srcid=', 'open?id=')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: 'var(--color-primario)', fontSize: '12px', fontWeight: '700', padding: '6px 12px', borderRadius: '4px', background: '#fff', border: '1px solid #e2e8f0', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}
+                        >
+                            <ExternalLink size={14} /> Abrir Externo
+                        </a>
+                    </div>
                 </div>
-                <div className="card-body" style={{ flex: 1, padding: 0, position: 'relative' }}>
+                <div className="card-body" style={{ flex: 1, padding: 0, position: 'relative', background: '#e5e7eb' }}>
                     {isGenerating && (
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255,255,255,0.7)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', zIndex: 10 }}>
                             <RefreshCw size={40} className="spin" color="var(--color-primario)" />
-                            <p style={{ marginTop: '15px', fontWeight: 'bold', color: 'var(--color-primario)' }}>Estamos cargando el nuevo documento...</p>
+                            <p style={{ marginTop: '15px', fontWeight: 'bold', color: 'var(--color-primario)' }}>Preparando contrato...</p>
                         </div>
                     )}
                     <iframe
@@ -216,7 +174,8 @@ const TemplateViewer = () => {
                         height="100%"
                         frameBorder="0"
                         title="Selector de Plantilla"
-                        style={{ border: 'none' }}
+                        style={{ border: 'none', minHeight: '600px' }}
+                        allow="autoplay"
                     ></iframe>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { googleService } from '../../services/GoogleIntegrationService'
 const TemplateViewer = () => {
     // ID de la plantilla maestra de Google Docs
     const masterTemplateId = '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0';
-    const masterDocUrl = `https://docs.google.com/document/d/${masterTemplateId}/preview?rm=minimal&embedded=true`;
+    const masterDocUrl = `https://docs.google.com/viewer?srcid=${masterTemplateId}&pid=explorer&efh=false&a=v&chrome=false&embedded=true`;
 
     const [currentDocUrl, setCurrentDocUrl] = useState(masterDocUrl);
     const [isGenerating, setIsGenerating] = useState(false);

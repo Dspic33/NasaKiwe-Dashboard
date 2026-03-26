@@ -5,7 +5,7 @@ import { googleService } from '../../services/GoogleIntegrationService'
 const TemplateViewer = () => {
     // ID de la plantilla maestra de Google Docs
     const masterTemplateId = '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0';
-    const masterDocUrl = `https://docs.google.com/document/d/${masterTemplateId}/edit?rm=minimal&embedded=true`;
+    const masterDocUrl = `https://docs.google.com/document/d/${masterTemplateId}/preview?rm=minimal&embedded=true`;
 
     const [currentDocUrl, setCurrentDocUrl] = useState(masterDocUrl);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -177,9 +177,9 @@ const TemplateViewer = () => {
             <div className="institutional-card" style={{ flex: 1, margin: '0', borderRadius: '8px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 <div className="card-header" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentDocUrl === masterDocUrl ? '#6b7280' : '#10B981' }}></div>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: currentDocUrl.includes(masterTemplateId) ? '#6b7280' : '#10B981' }}></div>
                         <span style={{ fontSize: '14px', color: '#475569', fontWeight: '600' }}>
-                            {currentDocUrl === masterDocUrl ? 'PREVISUALIZACIÓN: Plantilla Maestra' : 'RESULTADO: Documento Generado'}
+                            {currentDocUrl.includes(masterTemplateId) ? 'PREVISUALIZACIÓN: Plantilla Maestra' : 'RESULTADO: Documento Generado'}
                         </span>
                     </div>
                     <a

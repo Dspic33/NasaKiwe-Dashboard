@@ -1,17 +1,12 @@
 import { google } from 'googleapis';
 import { getOrCreateFolder, getOrCreateFile } from './driveService.js';
+import { getServiceAccountAuth } from './googleAuthService.js';
 
-const API_KEY = process.env.GOOGLE_API_KEY;
+export async function generateDocument(templateId, formData, newDocumentName) {
+    const auth = await getServiceAccountAuth();
 
-export async function generateDocument(accessToken, templateId, formData, newDocumentName) {
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials({ access_token: accessToken });
-
-    const options = { auth };
-    if (API_KEY) options.key = API_KEY;
-
-    const drive = google.drive({ version: 'v3', ...options });
-    const docs = google.docs({ version: 'v1', ...options });
+    const drive = google.drive({ version: 'v3', auth });
+    const docs = google.docs({ version: 'v1', auth });
     const sheets = google.sheets({ version: 'v4', auth });
 
     const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || 'root';
@@ -46,7 +41,7 @@ export async function generateDocument(accessToken, templateId, formData, newDoc
 
     return {
         documentId: newDocId,
-        documentUrl: `https://docs.google.com/document/d/${newDocId}/edit?rm=minimal&embedded=true`
+        documentUrl: `https://docs.google.com/document/d/${newDocId}/preview?rm=minimal&embedded=true`
     };
 }
 

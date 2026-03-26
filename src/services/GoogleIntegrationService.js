@@ -3,8 +3,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 class GoogleIntegrationService {
 
     constructor() {
-        // Obtenemos estado guardado en local o simulamos desconectado
-        this.isConnected = !!localStorage.getItem('real_google_access_token') || localStorage.getItem('google_auth_token') === 'true'
+        // Al usar Service Account en el servidor, siempre se asume conexión habilitada.
+        this.isConnected = true; 
 
         // Datos mockeados de una hoja de Google Sheets para Materiales
         this.mockSheetData = [
@@ -16,7 +16,7 @@ class GoogleIntegrationService {
         ]
     }
 
-    // SIMULACIÓN OAUTH
+    // SIMULACIÓN OAUTH (Para mantener la UI del Perfil contenta si existe botón, aunque ya no es estricto)
     async loginWithGoogle() {
         return new Promise((resolve) => {
             setTimeout(() => {
@@ -24,19 +24,17 @@ class GoogleIntegrationService {
                 localStorage.setItem('google_auth_token', 'true')
                 resolve({
                     success: true,
-                    email: 'asesor.vivienda@nasakiwe.gov.co',
+                    email: 'service.account@nasakiwe.gov.co',
                     lastSync: new Date().toISOString()
                 })
-            }, 1500) // Simular delay de red y payload de OAuth
+            }, 1000)
         })
     }
 
     async logoutGoogle() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                this.isConnected = false
-                localStorage.removeItem('google_auth_token')
-                resolve({ success: true })
+                resolve({ success: true, message: "La integración se maneja internamente seguro ahora." })
             }, 500)
         })
     }
@@ -45,21 +43,15 @@ class GoogleIntegrationService {
         return this.isConnected
     }
 
-    // SIMULACIÓN GOOGLE SHEETS AHORA CON PROXY REAL
+    // GOOGLE SHEETS
     async getMaterialesFromSheet(sheetId) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
         try {
             const req = await fetch(`${API_BASE_URL}/api/google/sheets`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs', // ID real del excel
-                    range: 'Hoja 1!A:D' // Asumimos un nombre de hoja genérico, se puede perfeccionar
+                    range: 'Hoja 1!A:D' 
                 })
             });
 
@@ -97,11 +89,6 @@ class GoogleIntegrationService {
     }
 
     async updateMaterialEnSheet(rowData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
         const rowIndex = rowData.id;
 
         try {
@@ -109,7 +96,6 @@ class GoogleIntegrationService {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
                     range: `Hoja 1!A${rowIndex}:D${rowIndex}`,
                     values: [
@@ -132,17 +118,11 @@ class GoogleIntegrationService {
     }
 
     async addMaterialToSheet(rowData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
         try {
             const req = await fetch(`${API_BASE_URL}/api/google/sheets/append`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
                     values: [
                         [
@@ -165,14 +145,6 @@ class GoogleIntegrationService {
     }
 
     async deleteMaterialFromSheet(rowIndexInUI) {
-        if (!this.isConnected) throw new Error("No autenticado en Google")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
-        // UI rowIndex 0 es el primer material después del encabezado.
-        // Excel: Fila 1 = Encabezado. Fila 2 = Primer dato.
-        // batchUpdate DeleteDimension: 0-based index. Fila 1 es index 0. Fila 2 es index 1.
         const googleRowIndex = rowIndexInUI + 1;
 
         try {
@@ -180,7 +152,6 @@ class GoogleIntegrationService {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
                     rowIndex: googleRowIndex
                 })
@@ -194,17 +165,8 @@ class GoogleIntegrationService {
         }
     }
 
-    // SIMULACIÓN GOOGLE DOCS & DRIVE (AHORA LLAMA AL PROXY REAL)
+    // GOOGLE DOCS & DRIVE (Generación por Service Account)
     async generateDocsFromTemplates(procesoInfo) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
-        // Para este proyecto, el admin tendría estos IDs preconfigurados en PanelAdminGoogle
-        // Aquí le pasamos cualquier ID público/compartido creado por el usuario como plantilla
-
-        // Mapeo de placeholders a enviar a Docs: {{fecha}}, {{numero}}, {{objeto}}, {{lugar}}, {{valor}}
         const rawFormData = {
             fecha: procesoInfo.fecha || new Date().toISOString().split('T')[0],
             numero: procesoInfo.numero_proceso || 'Borrador',
@@ -213,15 +175,13 @@ class GoogleIntegrationService {
             valor: Number(procesoInfo.valor_estimado || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })
         }
 
-        console.log("DEBUG: Datos enviados para generación de documentos:", rawFormData);
+        console.log("DEBUG: Datos enviados para generación de documentos (Service Account):", rawFormData);
 
         try {
-            // Único Documento Oficial: Estudio de Conveniencia y Oportunidad
             const estudioRes = await fetch(`${API_BASE_URL}/api/google/generate-document`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     templateId: '17HSl_q5nEo8qW0IGSc-WKTwthBRlahUWSPmjY2Plto0', // Template Principal
                     newDocumentName: `Estudio de Conveniencia - ${rawFormData.numero}`,
                     formData: rawFormData
@@ -231,21 +191,14 @@ class GoogleIntegrationService {
             if (!estudioRes.ok) {
                 const errorData = await estudioRes.json().catch(() => ({}));
                 const errorMessage = errorData.error || `Error del servidor (${estudioRes.status})`;
-
-                if (estudioRes.status === 401) {
-                    throw new Error("Tu sesión de Google ha expirado. Por favor, ve a 'Configuración de Perfil' y vuelve a conectar tu cuenta.");
-                }
-                if (estudioRes.status === 403) {
-                    throw new Error(`Acceso denegado: ${errorMessage}. Verifique si su cuenta tiene permisos en Drive.`);
-                }
-                throw new Error(`Error en Proxy backend: ${errorMessage}`);
+                throw new Error(`Error en Backend Service Account: ${errorMessage}`);
             }
 
             const estudioData = await estudioRes.json();
 
             return {
                 success: true,
-                folderUrl: 'https://drive.google.com/drive/my-drive',
+                folderUrl: 'https://drive.google.com/drive/my-drive', // URL temporal, idealmente devolver el folderId desde backend
                 documents: [
                     {
                         name: `Estudio de Conveniencia - ${rawFormData.numero}`,
@@ -256,13 +209,11 @@ class GoogleIntegrationService {
             }
 
         } catch (err) {
-            // Solo usamos el fallback de MOCK si el servidor local ni siquiera responde (ERR_CONNECTION_REFUSED)
-            // o si es una URL de localhost. En producción (Render), queremos ver el error real.
             const isLocalhost = API_BASE_URL.includes('localhost');
             const isNetworkError = err.message.includes('Failed to fetch') || err.message.includes('NetworkError');
 
             if (isLocalhost && isNetworkError) {
-                console.warn("Fallo en proxy local, usando respaldo fallback (MOCK) para desarrollo:", err.message);
+                console.warn("Fallo en proxy local, usando respaldo fallback (MOCK):", err.message);
                 return new Promise((resolve) => setTimeout(() => resolve({
                     success: true,
                     documents: [
@@ -273,17 +224,13 @@ class GoogleIntegrationService {
                 }), 2000));
             }
 
-            // En cualquier otro caso (especialmente en producción), relanzar el error para que el usuario lo vea
-            console.error("Error crítico en generación de documentos:", err.message);
+            console.error("Error crítico en generación de documentos:", err);
             throw err;
         }
     }
+    
+    // Método consumido por TemplateViewer.jsx interactivo
     async fillSpecificTemplate(formData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
         const rawData = {
             fecha: formData.fecha || '',
             objeto: formData.descripcion_objeto || '',
@@ -292,11 +239,10 @@ class GoogleIntegrationService {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/docs/llenar`, {
+            const response = await fetch(`${API_BASE_URL}/api/google/docs/llenar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     formData: rawData
                 })
             });
@@ -305,16 +251,12 @@ class GoogleIntegrationService {
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 const data = await response.json();
                 if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error("Tu sesión de Google ha expirado. Por favor, ve a 'Configuración de Perfil' y vuelve a conectar tu cuenta.");
-                    }
                     throw new Error(data.error || `Error del servidor (${response.status})`);
                 }
                 return data;
             } else {
                 const text = await response.text();
-                console.error("DEBUG: Respuesta no JSON recibida:", text.substring(0, 200));
-                throw new Error(`El servidor de Google Proxy devolvió un error (HTML/Texto). Asegúrate de que el servidor esté corriendo y actualizado.`);
+                throw new Error(`El servidor devolvió un error (HTML/Texto). Asegúrate de que el backend esté corriendo.`);
             }
         } catch (error) {
             console.error("Error en fillSpecificTemplate:", error);
@@ -323,17 +265,11 @@ class GoogleIntegrationService {
     }
 
     async fillLiveTestTemplate(formData) {
-        if (!this.isConnected) throw new Error("No autenticado en Google. Ve a Configuración de Perfil.")
-
-        const token = localStorage.getItem('real_google_access_token')
-        if (!token) throw new Error("No se encontró token de acceso válido")
-
         try {
             const response = await fetch(`${API_BASE_URL}/api/google/test-new-doc`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    accessToken: token,
                     sheetId: '1j_WkLua3tB-N6DC-1_wKZJa1NXB_cBx1QmAPVw-rlAs',
                     formData: formData
                 })

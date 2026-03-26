@@ -35,4 +35,7 @@ dist
 
 # Temporary files
 tmp
-temp
+# Antigravity/NasaKiwe Helpers
+server/diagnose-files.js
+server/get-refresh-token.js
+server/test-jwt.js

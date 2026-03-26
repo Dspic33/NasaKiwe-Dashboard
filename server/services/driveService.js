@@ -86,20 +86,19 @@ export async function getOrCreateFile(drive, folderId, fileName, templateId) {
     });
     const newFileId = copyRes.data.id;
 
-    // Compartir automáticamente: "Solo personas de la organización (nasakiwe.gov.co) pueden editar"
+    // Compartir automáticamente: "Cualquier persona con el enlace puede editar"
     try {
         await drive.permissions.create({
             fileId: newFileId,
             requestBody: {
                 role: 'writer',
-                type: 'domain',
-                domain: 'nasakiwe.gov.co'
+                type: 'anyone'
             },
             supportsAllDrives: true
         });
-        console.log(`🔐 Permisos restringidos al dominio nasakiwe.gov.co para ${newFileId}`);
+        console.log(`🔐 Permisos configurados a 'anyone' (Público con Enlace) para ${newFileId}`);
     } catch (permErr) {
-        console.warn(`⚠️ No se pudieron asignar permisos de dominio: ${permErr.message}`);
+        console.warn(`⚠️ No se pudieron asignar permisos públicos: ${permErr.message}`);
     }
 
     return newFileId;

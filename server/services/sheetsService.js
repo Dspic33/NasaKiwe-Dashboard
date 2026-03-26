@@ -1,14 +1,10 @@
 import { google } from 'googleapis';
+import { getServiceAccountAuth } from './googleAuthService.js';
 
-const API_KEY = process.env.GOOGLE_API_KEY;
+export async function readSheet(sheetId, range) {
+    const auth = await getServiceAccountAuth();
 
-export async function readSheet(accessToken, sheetId, range) {
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials({ access_token: accessToken });
-
-    const options = { version: 'v4', auth };
-    if (API_KEY) options.key = API_KEY;
-    const sheets = google.sheets(options);
+    const sheets = google.sheets({ version: 'v4', auth });
 
     // Resolución defensiva del nombre de la hoja
     let targetRange = range || 'A1:D100';
@@ -52,13 +48,10 @@ export async function readSheet(accessToken, sheetId, range) {
     }));
 }
 
-export async function updateSheetRows(accessToken, sheetId, range, values) {
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials({ access_token: accessToken });
+export async function updateSheetRows(sheetId, range, values) {
+    const auth = await getServiceAccountAuth();
 
-    const options = { version: 'v4', auth };
-    if (API_KEY) options.key = API_KEY;
-    const sheets = google.sheets(options);
+    const sheets = google.sheets({ version: 'v4', auth });
 
     return sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
@@ -68,13 +61,10 @@ export async function updateSheetRows(accessToken, sheetId, range, values) {
     });
 }
 
-export async function deleteSheetRow(accessToken, sheetId, rowIndex) {
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials({ access_token: accessToken });
+export async function deleteSheetRow(sheetId, rowIndex) {
+    const auth = await getServiceAccountAuth();
 
-    const options = { version: 'v4', auth };
-    if (API_KEY) options.key = API_KEY;
-    const sheets = google.sheets(options);
+    const sheets = google.sheets({ version: 'v4', auth });
 
     return sheets.spreadsheets.batchUpdate({
         spreadsheetId: sheetId,
@@ -93,13 +83,10 @@ export async function deleteSheetRow(accessToken, sheetId, rowIndex) {
     });
 }
 
-export async function appendSheetRow(accessToken, sheetId, values) {
-    const auth = new google.auth.OAuth2();
-    auth.setCredentials({ access_token: accessToken });
+export async function appendSheetRow(sheetId, values) {
+    const auth = await getServiceAccountAuth();
 
-    const options = { version: 'v4', auth };
-    if (API_KEY) options.key = API_KEY;
-    const sheets = google.sheets(options);
+    const sheets = google.sheets({ version: 'v4', auth });
 
     return sheets.spreadsheets.values.append({
         spreadsheetId: sheetId,

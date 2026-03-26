@@ -14,12 +14,12 @@ export async function getServiceAccountAuth() {
     }
 
     try {
-        const CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID;
-        const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-        const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
+        const CLIENT_ID = (process.env.VITE_GOOGLE_CLIENT_ID || '').trim().replace(/"/g, '');
+        const CLIENT_SECRET = (process.env.GOOGLE_CLIENT_SECRET || '').trim().replace(/"/g, '');
+        const REFRESH_TOKEN = (process.env.GOOGLE_REFRESH_TOKEN || '').trim().replace(/"/g, '');
         
         if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
-            console.error("❌ CRÍTICO: Faltan VITE_GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET o GOOGLE_REFRESH_TOKEN en .env");
+            console.error("❌ CRÍTICO: Faltan credenciales OAuth2. Verifica Render Dashboard.");
             throw new Error("Credenciales OAuth2 de Admin no configuradas en el servidor.");
         }
 

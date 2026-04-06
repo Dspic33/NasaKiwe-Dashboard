@@ -3,48 +3,53 @@
  * Includes SPI, CPI, and PPC calculations
  */
 
+export const calculateEVM = (ev, pv, ac, completedTasks, totalTasks) => {
+    const spi = (!pv || pv === 0) ? 1.0 : parseFloat((ev / pv).toFixed(2));
+    const cpi = (!ac || ac === 0) ? 1.0 : parseFloat((ev / ac).toFixed(2));
+    const ppc = (!totalTasks || totalTasks === 0) ? 100 : Math.round((completedTasks / totalTasks) * 100);
+    
+    return {
+        ev,
+        pv,
+        ac,
+        spi,
+        cpi,
+        ppc,
+        status: (spi >= 1.0 && cpi >= 1.0) ? 'Saludable' : (spi >= 0.8 && cpi >= 0.8) ? 'Alerta' : 'Crítico',
+        color: (spi >= 1.0 && cpi >= 1.0) ? '#10B981' : (spi >= 0.8 && cpi >= 0.8) ? '#F59E0B' : '#DC2626'
+    };
+};
+
+export const getEVMSummary = (metrics) => {
+    if (!metrics) return { label: 'Sin Datos', color: '#6B7280' };
+    return {
+        label: metrics.status,
+        color: metrics.color,
+        description: `SPI: ${metrics.spi} / CPI: ${metrics.cpi}`
+    };
+};
+
 export const evmUtils = {
-  /**
-   * Calculate Schedule Performance Index (SPI)
-   * SPI = EV / PV
-   * @param {number} EV - Earned Value (Valor Ganado)
-   * @param {number} PV - Planned Value (Valor Planificado)
-   */
   calculateSPI: (EV, PV) => {
     if (!PV || PV === 0) return 1.0;
     return parseFloat((EV / PV).toFixed(2));
   },
 
-  /**
-   * Calculate Cost Performance Index (CPI)
-   * CPI = EV / AC
-   * @param {number} EV - Earned Value (Valor Ganado)
-   * @param {number} AC - Actual Cost (Costo Real)
-   */
   calculateCPI: (EV, AC) => {
     if (!AC || AC === 0) return 1.0;
     return parseFloat((EV / AC).toFixed(2));
   },
 
-  /**
-   * Calculate Percentage Plan Complete (PPC)
-   * PPC = (Completed Tasks according to plan / Total planned tasks) * 100
-   * @param {number} completedTasks - Number of tasks finished that were planned to be finished
-   * @param {number} plannedTasks - Total number of tasks planned to be finished by today
-   */
   calculatePPC: (completedTasks, plannedTasks) => {
     if (!plannedTasks || plannedTasks === 0) return 100;
     return Math.round((completedTasks / plannedTasks) * 100);
   },
 
-  /**
-   * Get dynamic color based on metric health
-   */
   getMetricColor: (value, type = 'index') => {
     if (type === 'index') {
-      if (value >= 1.0) return '#10B981'; // Success Green
-      if (value >= 0.8) return '#F59E0B'; // Warning Amber
-      return '#DC2626'; // Error Red
+      if (value >= 1.0) return '#10B981';
+      if (value >= 0.8) return '#F59E0B';
+      return '#DC2626';
     }
     if (type === 'percentage') {
       if (value >= 80) return '#10B981';
@@ -54,9 +59,6 @@ export const evmUtils = {
     return '#6B7280';
   },
 
-  /**
-   * Get status label
-   */
   getMetricStatus: (value, type = 'index') => {
     if (type === 'index') {
       if (value >= 1.0) return 'Saludable';

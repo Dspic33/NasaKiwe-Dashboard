@@ -12,7 +12,7 @@ import {
     FileText,
     ChevronRight,
     ChevronDown,
-    Layout as LayoutIcon,
+    LayoutDashboard as LayoutIcon,
     Search,
     MapPin,
     Users,

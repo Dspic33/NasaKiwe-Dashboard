@@ -11,6 +11,8 @@ import {
     MessageSquare,
     FileText,
     ChevronRight,
+    ChevronDown,
+    Layout as LayoutIcon,
     Search,
     MapPin,
     Users,
@@ -28,43 +30,14 @@ import {
     PieChart, Pie, Cell, ReferenceLine, AreaChart, Area
 } from 'recharts'
 
+import { calculateEVM, getEVMSummary } from '../../../utils/evmUtils'
+
 // Mock Data for Construction Modules
 import { MOCK_CONTRATOS, ESTADOS_CONTRATACION, ESTADOS_LABELS, ROLES_USUARIO } from '../../../data/contratosMock'
 
-const ACTIVIDADES_CATALOGO = [
-    // 1. PRELIMINARES
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6a', capitulo: '1. Preliminares', nombre: '1.01 Localización y replanteo', descripcion: 'Trazo, nivelación y replanteo de la vivienda según planos.', orden: 1, duracion_dias: 3 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6b', capitulo: '1. Preliminares', nombre: '1.02 Excavación manual', descripcion: 'Excavación manual para cimientos en terreno firme.', orden: 2, duracion_dias: 5 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6c', capitulo: '1. Preliminares', nombre: '1.03 Relleno con material de sitio', descripcion: 'Compactación manual del material de sitio controlado.', orden: 3, duracion_dias: 4 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6d', capitulo: '1. Preliminares', nombre: '1.04 Sobre acarreo de materiales', descripcion: 'Traslado de materiales hasta el sitio exacto de la obra.', orden: 4, duracion_dias: 6 },
+import { ACTIVIDADES_CATALOGO as FULL_CATALOG } from '../../../data/catalog';
 
-    // 2. CIMENTACION
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6e', capitulo: '2. Cimentación', nombre: '2.01 Solado de limpieza', descripcion: 'Solado de limpieza e=0.05m en concreto de 14MPa.', orden: 5, duracion_dias: 2 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6f', capitulo: '2. Cimentación', nombre: '2.02 Viga de cimentación 0.20*0.25m', descripcion: 'Concreto de 21MPa, incluye formaleta y mezclado mecánico.', orden: 6, duracion_dias: 8 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a60', capitulo: '2. Cimentación', nombre: '2.03 Viga de cimentación 0.20*0.20m', descripcion: 'Concreto de 21MPa, incluye formaleta y mezclado mecánico.', orden: 7, duracion_dias: 7 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a61', capitulo: '2. Cimentación', nombre: '2.04 Concreto Ciclópeo', descripcion: '60% concreto 17.5MPa y 40% piedra, según diseño.', orden: 8, duracion_dias: 10 },
-
-    // 3. ESTRUCTURA EN CONCRETO
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a62', capitulo: '3. Estructura', nombre: '3.01 Viga de amarre', descripcion: 'Concreto 21MPa de 0.12*0.20m, incluye formaleta.', orden: 9, duracion_dias: 5 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a63', capitulo: '3. Estructura', nombre: '3.02 Viga cumbrera', descripcion: 'Concreto 21MPa de 0.12*0.23m, incluye formaleta.', orden: 10, duracion_dias: 6 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a64', capitulo: '3. Estructura', nombre: '3.03 Columna 0.20*0.20m', descripcion: 'Concreto 21MPa, incluye formaleta y mezclado.', orden: 11, duracion_dias: 8 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a65', capitulo: '3. Estructura', nombre: '3.04 Columna 0.12*0.20m', descripcion: 'Concreto 21MPa, incluye formaleta y mezclado.', orden: 12, duracion_dias: 8 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a66', capitulo: '3. Estructura', nombre: '3.05 Cinta de amarre', descripcion: 'Concreto 21MPa 0.12*0.10m, incluye formaleta.', orden: 13, duracion_dias: 4 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a67', capitulo: '3. Estructura', nombre: '3.06 Acero de refuerzo Grado 60', descripcion: 'Figurado e instalado, incluye alambre de amarre.', orden: 14, duracion_dias: 12 },
-
-    // 4. CUBIERTA
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a68', capitulo: '4. Cubierta', nombre: '4.01 Correas tipo Perlín', descripcion: 'C120*60*20*1.5mm, incluye soldadura y anticorrosivo.', orden: 15, duracion_dias: 7 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a69', capitulo: '4. Cubierta', nombre: '4.02 Teja de fibrocemento P7', descripcion: 'Pintada internamente con vinilo Tipo 3, incluye ganchos.', orden: 16, duracion_dias: 6 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6a', capitulo: '4. Cubierta', nombre: '4.03 Caballete fijo', descripcion: 'Suministro e instalación en fibrocemento.', orden: 17, duracion_dias: 3 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6b', capitulo: '4. Cubierta', nombre: '4.04 Cumbreras y limatesas', descripcion: 'Suministro e instalación en fibrocemento.', orden: 18, duracion_dias: 4 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6c', capitulo: '4. Cubierta', nombre: '4.05 Solapa en lámina metálica', descripcion: 'Cal. 35, incluye elementos de fijación.', orden: 19, duracion_dias: 3 },
-
-    // 5. PISOS
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6d', capitulo: '5. Pisos', nombre: '5.01 Piso primario e=0.07m', descripcion: 'Concreto de 21Mpa. Incluye mezclado mecánico.', orden: 20, duracion_dias: 5 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6e', capitulo: '5. Pisos', nombre: '5.02 Piso cerámico comercial', descripcion: 'Incluye mortero 1:3, material de pega y fragua.', orden: 21, duracion_dias: 8 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6f', capitulo: '5. Pisos', nombre: '5.03 Guardaescoba cerámico', descripcion: 'Suministro e instalación, incluye pega y fragua.', orden: 22, duracion_dias: 4 },
-    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b70', capitulo: '5. Pisos', nombre: '5.04 Andén en concreto 21MPa', descripcion: 'e=0.08m, con dilataciones y escobillado.', orden: 23, duracion_dias: 3 },
-]
+const ACTIVIDADES_CATALOGO = FULL_CATALOG;
 
 
 const BitacoraView = ({ currentUser, initialProjectId = null }) => {
@@ -87,7 +60,7 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
         municipio: '',
         resguardo: '',
         numero_proceso: '',
-        valor_estimado: 0,
+        valor_estimado: 95000000,
         descripcion_objeto: '',
         contratista: '',
         supervisor: '',
@@ -102,13 +75,30 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
     })
     const [creatingProject, setCreatingProject] = useState(false)
 
-    const [collapsedChapters, setCollapsedChapters] = useState({
-        '1. Preliminares': true,
-        '2. Cimentación': true,
-        '3. Estructura': true,
-        '4. Cubierta': true,
-        '5. Pisos': true
-    })
+    // Estado para colapsar/expandir capítulos (Default: Expanded for visibility)
+    const [collapsedChapters, setCollapsedChapters] = useState(
+        ACTIVIDADES_CATALOGO.reduce((acc, act) => {
+            acc[act.capitulo] = false; // Ajustado a false para mostrar todo inicialmente
+            return acc;
+        }, {})
+    )
+
+
+    const toggleChapter = (cap) => {
+        setCollapsedChapters(prev => ({
+            ...prev,
+            [cap]: !prev[cap]
+        }));
+    };
+
+    const toggleAllChapters = (expand) => {
+        const newState = {};
+        ACTIVIDADES_CATALOGO.forEach(act => {
+            newState[act.capitulo] = !expand;
+        });
+        setCollapsedChapters(newState);
+    };
+
     const [expandedPhotos, setExpandedPhotos] = useState({})
     const [registrosSincronizados, setRegistrosSincronizados] = useState([])
     const [cargandoRegistros, setCargandoRegistros] = useState(false)
@@ -187,7 +177,7 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
     const calculateHouseProgress = (vivienda) => {
         if (!registrosSincronizados || !registrosSincronizados.length) return 0;
         
-        const TOTAL_ACTIVIDADES = ACTIVIDADES_CATALOGO.length; // 23
+        const TOTAL_ACTIVIDADES = ACTIVIDADES_CATALOGO.length;
         const reportesVivienda = registrosSincronizados.filter(r => 
             parseInt(r.vivienda_num) === parseInt(vivienda.numero_lote)
         );
@@ -241,6 +231,50 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
         
         return Math.round(sumProgress / casasProyecto.length);
     };
+
+    // --- EVM METRICS CALCULATION (PROJECT LEVEL) ---
+    const getProjectEVMMetrics = () => {
+        if (!selectedProyecto || !registrosSincronizados) return { spi: 1, cpi: 1, ppc: 0 };
+
+        let totalEV = 0;
+        let completedOnTime = 0;
+        let totalActivities = 0;
+
+        // Agregamos progreso consolidado por actividad
+        const houseProgression = {}; 
+
+        registrosSincronizados.forEach(reg => {
+            const vnum = reg.vivienda_num;
+            if (!houseProgression[vnum]) houseProgression[vnum] = {};
+            const current = houseProgression[vnum][reg.actividad_id] || 0;
+            const nuevoTotal = current + (reg.progreso || 0);
+            houseProgression[vnum][reg.actividad_id] = nuevoTotal > 100 ? 100 : nuevoTotal;
+        });
+
+        Object.keys(houseProgression).forEach(vKey => {
+            Object.keys(houseProgression[vKey]).forEach(actId => {
+                const prog = houseProgression[vKey][actId];
+                const item = ACTIVIDADES_CATALOGO.find(a => a.id === actId);
+                if (item) {
+                    totalEV += (prog / 100) * (item.valor_estimado || 0);
+                    if (prog === 100) completedOnTime++;
+                }
+                totalActivities++;
+            });
+        });
+
+        // Mock PV/AC based on EV for single project demo
+        const totalBudget = (selectedProyecto.casas_count || 1) * 95000000;
+        const projectStartTime = selectedProyecto.fecha_inicio || new Date();
+        const daysPassed = (new Date() - new Date(projectStartTime)) / (1000 * 60 * 60 * 24);
+        const planProgress = Math.min(100, (daysPassed / 120) * 100);
+        const totalPV = (planProgress / 100) * totalBudget || (totalBudget * 0.1);
+        const totalAC = totalEV * 1.02; // Asumimos un 2% de sobrecosto ligero para demo
+
+        return calculateEVM(totalEV, totalPV, totalAC, completedOnTime, totalActivities || 1);
+    };
+
+    const projectEVM = getProjectEVMMetrics();
 
     // Nueva función para generar PDF de un proyecto completo
     const generateProjectPDF = async () => {
@@ -365,37 +399,74 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
 
     const getDashboardMetrics = () => {
         const totalProyectos = proyectosDB.length;
-        
-        // Calcular progreso físico promedio de todos los proyectos
-        const projectProgresses = proyectosDB.map(p => calculateProjectProgress(p.id));
-        const avgPhysicalProgress = totalProyectos > 0 
-            ? projectProgresses.reduce((acc, val) => acc + val, 0) / totalProyectos 
-            : 0;
+        if (totalProyectos === 0) return { 
+            totalProyectos: 0, enAlerta: 0, totalEstimado: 0, 
+            totalEjecutado: 0, ejecucionFinanciera: 0, avgSPI: 1, avgCPI: 1 
+        };
 
-        // Metas e índices (Simulados basados en progreso real para que no sea siempre 1.0)
-        // SPI = Progreso Real / Progreso Esperado (Simplificado: 0.95 de base + variación según progreso)
-        const avgSPI = totalProyectos > 0 ? (0.92 + (avgPhysicalProgress / 1000)) : 1.0;
-        const avgCPI = totalProyectos > 0 ? (0.94 + (avgPhysicalProgress / 2000)) : 1.0;
+        let aggregateEV = 0;
+        let aggregatePV = 0;
+        let aggregateAC = 0;
+        let totalCompleted = 0;
+        let totalPossibleActivities = 0;
 
-        const enAlerta = proyectosDB.filter((p, idx) => {
-            const pProgress = projectProgresses[idx];
-            return pProgress < 5; // Ejemplo: Proyectos con menos del 5% de avance
-        }).length;
+        proyectosDB.forEach(p => {
+            const pVivs = allViviendas.filter(v => v.proyecto_id === p.id);
+            const pEvids = allEvidencias.filter(e => e.proyecto_id === p.id);
+            
+            let pEV = 0;
+            pVivs.forEach(v => {
+                ACTIVIDADES_CATALOGO.forEach(act => {
+                    const vEvids = pEvids.filter(e => e.vivienda_id === v.id && e.actividad_id === act.id);
+                    const actProg = vEvids.reduce((sum, e) => sum + (e.progreso || 0), 0);
+                    pEV += (Math.min(100, actProg) / 100) * (act.valor_estimado || 0);
+                    if (actProg >= 100) totalCompleted++;
+                    totalPossibleActivities++;
+                });
+            });
+
+            // PV calculation per project
+            const pBudget = (pVivs.length || 1) * 95000000;
+            const start = p.fecha_inicio ? new Date(p.fecha_inicio) : new Date();
+            const days = (new Date() - start) / (1000 * 60 * 60 * 24);
+            const planRatio = Math.min(100, (days / 120) * 100);
+            
+            aggregateEV += pEV;
+            aggregatePV += (planRatio / 100) * pBudget || (pBudget * 0.1);
+            aggregateAC += pEV * 1.02; // Mocking AC as EV + 2% for aggregation
+        });
+
+        const globalEVM = calculateEVM(aggregateEV, aggregatePV, aggregateAC, totalCompleted, totalPossibleActivities || 1);
         
         const totalEstimado = proyectosDB.reduce((acc, p) => acc + (parseFloat(p.valor_estimado) || 0), 0);
-        
-        // Ejecución financiera vinculada al avance físico real
-        const totalEjecutado = totalEstimado * (avgPhysicalProgress / 100);
-        const ejecucionFinanciera = totalEjecutado > 0 && totalEstimado > 0 ? (totalEjecutado / totalEstimado) * 100 : 0;
-        
+        const ejecucionFinanciera = totalEstimado > 0 ? (aggregateEV / totalEstimado) * 100 : 0;
+
+        // Alerts based on SPI < 0.85
+        const enAlerta = proyectosDB.filter(p => {
+            const pVivs = allViviendas.filter(v => v.proyecto_id === p.id);
+            const pEvids = allEvidencias.filter(e => e.proyecto_id === p.id);
+            let pEV = 0;
+            pVivs.forEach(v => {
+                ACTIVIDADES_CATALOGO.forEach(act => {
+                    const vEvids = pEvids.filter(e => e.vivienda_id === v.id && e.actividad_id === act.id);
+                    pEV += (Math.min(100, vEvids.reduce((s, e) => s + (e.progreso || 0), 0)) / 100) * (act.valor_estimado || 0);
+                });
+            });
+            const pBudget = (pVivs.length || 1) * 95000000;
+            const start = p.fecha_inicio ? new Date(p.fecha_inicio) : new Date();
+            const days = (new Date() - start) / (1000 * 60 * 60 * 24);
+            const pPV = (Math.min(100, (days / 120) * 100) / 100) * pBudget || (pBudget * 0.1);
+            return (pEV / pPV) < 0.85;
+        }).length;
+
         return {
             totalProyectos,
             enAlerta,
             totalEstimado,
-            totalEjecutado,
+            totalEjecutado: aggregateEV,
             ejecucionFinanciera,
-            avgSPI: avgSPI > 1 ? 1 : avgSPI,
-            avgCPI: avgCPI > 1 ? 1 : avgCPI
+            avgSPI: globalEVM.spi,
+            avgCPI: globalEVM.cpi
         };
     };
 
@@ -627,9 +698,6 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
         };
     }, [selectedProyecto, supabase]);
 
-    const toggleChapter = (cap) => {
-        setCollapsedChapters(prev => ({ ...prev, [cap]: !prev[cap] }))
-    }
 
     const togglePhoto = (actId) => {
         setExpandedPhotos(prev => ({ ...prev, [actId]: !prev[actId] }))
@@ -802,7 +870,7 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
         const cpiValue = planProgress > 0 ? (projectPhysProgress / planProgress) : 1.0;
         const boundedCpi = Math.min(1.2, Math.max(0, cpiValue));
         
-        const valorTotal = parseFloat(p.valor_estimado) || 150000000;
+        const valorTotal = parseFloat(p.valor_estimado) || ((p.casas_count || 1) * 95000000);
         
         // Generate dynamic Cash Flow based on project dates
         const totalMonths = Math.max(1, Math.ceil(totalDuration / (1000 * 60 * 60 * 24 * 30)));
@@ -1244,13 +1312,34 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredProyectos.map((p, idx) => {
-                                const progress = calculateGlobalProjectProgress(p.id);
-                                const statusColor = progress > 80 ? '#10B981' : progress > 40 ? '#F59E0B' : '#EF4444';
-                                
-                                // Recalcular CPI/SPI en base al progreso real si lo hay
-                                const spi = progress > 0 ? (0.92 + (progress / 1000)).toFixed(2) : (0.9 + (idx * 0.02) % 0.1).toFixed(2);
-                                const cpi = progress > 0 ? (0.94 + (progress / 2000)).toFixed(2) : (0.95 + (idx * 0.01) % 0.05).toFixed(2);
+                             {filteredProyectos.map((p, idx) => {
+                                 const progress = calculateGlobalProjectProgress(p.id);
+                                 const statusColor = progress > 80 ? '#10B981' : progress > 40 ? '#F59E0B' : '#EF4444';
+                                 
+                                 // Calcular métricas reales por proyecto para el Overview
+                                 const pVivs = allViviendas.filter(v => v.proyecto_id === p.id);
+                                 const pEvids = allEvidencias.filter(e => e.proyecto_id === p.id);
+                                 
+                                 let ev = 0;
+                                 let completed = 0;
+                                 pVivs.forEach(v => {
+                                     ACTIVIDADES_CATALOGO.forEach(act => {
+                                         const vEvids = pEvids.filter(e => e.vivienda_id === v.id && e.actividad_id === act.id);
+                                         const actProg = vEvids.reduce((sum, e) => sum + (e.progreso || 0), 0);
+                                         ev += (Math.min(100, actProg) / 100) * (act.valor_estimado || 0);
+                                         if (actProg >= 100) completed++;
+                                     });
+                                 });
+                                 
+                                 const totalBudget = (pVivs.length || 1) * 95000000;
+                                 const start = p.fecha_inicio ? new Date(p.fecha_inicio) : new Date();
+                                 const days = (new Date() - start) / (1000 * 60 * 60 * 24);
+                                 const plan = Math.min(100, (days / 120) * 100);
+                                 const pv = (plan / 100) * totalBudget || (totalBudget * 0.1);
+                                 const ac = ev * 1.02; // Mock AC for overview 
+                                 
+                                 const projMetrics = calculateEVM(ev, pv, ac, completed, (pVivs.length * ACTIVIDADES_CATALOGO.length) || 1);
+                                 const { spi, cpi } = projMetrics;
 
                                 return (
                                     <tr key={p.id} onClick={() => setSelectedProyecto(p)}>
@@ -1375,6 +1464,43 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                     </div>
                 </div>
 
+                {/* EVM Metrics Row */}
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(3, 1fr)', 
+                    gap: '16px',
+                    marginBottom: '20px',
+                    padding: '16px',
+                    background: '#F8FAFC',
+                    borderRadius: '8px',
+                    border: '1px solid #E2E8F0'
+                }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: projectEVM.spiColor }}></div>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase' }}>SPI (Cronograma)</span>
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', color: '#1E293B' }}>{projectEVM.spi}</div>
+                        <div style={{ fontSize: '11px', color: projectEVM.spiColor, fontWeight: '600' }}>{projectEVM.spiLabel}</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '1px solid #E2E8F0', paddingLeft: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: projectEVM.cpiColor }}></div>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase' }}>CPI (Costos)</span>
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', color: '#1E293B' }}>{projectEVM.cpi}</div>
+                        <div style={{ fontSize: '11px', color: projectEVM.cpiColor, fontWeight: '600' }}>{projectEVM.cpiLabel}</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '1px solid #E2E8F0', paddingLeft: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: projectEVM.ppc >= 80 ? '#10B981' : projectEVM.ppc >= 60 ? '#F59E0B' : '#EF4444' }}></div>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', textTransform: 'uppercase' }}>PPC (Planificación)</span>
+                        </div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', color: '#1E293B' }}>{projectEVM.ppc}%</div>
+                        <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>Confiabilidad Ejecución</div>
+                    </div>
+                </div>
+
                 {/* Info Grid */}
                 <div style={{ 
                     display: 'grid', 
@@ -1485,11 +1611,44 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
 
     const renderActividadesTimeline = () => (
         <div className="activities-timeline-container">
-            <div className="timeline-header">
-                <h3>Cronograma de Ejecución: Casa Unidad {selectedVivienda.numero}</h3>
-                <div className="header-actions">
-                    <button className="btn-secondary btn-small">
-                        <FileText size={16} /> Ver Historial
+            <div className="timeline-header" style={{ borderBottom: '1px solid #E2E8F0', paddingBottom: '16px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#2D5F3E', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <LayoutIcon size={22} color="#2D5F3E" />
+                        Cronograma de Ejecución: Casa Unidad {selectedVivienda.numero}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                        <span style={{ 
+                            background: '#D1FAE5', 
+                            color: '#059669', 
+                            fontSize: '11px', 
+                            fontWeight: '800', 
+                            padding: '4px 10px', 
+                            borderRadius: '12px',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                        }}>
+                            Catálogo Nacional: 77 Actividades
+                        </span>
+                        <p style={{ margin: 0, fontSize: '13px', color: '#64748B', fontWeight: '500' }}>
+                            Estandarizado a Presupuesto $95M COP
+                        </p>
+                    </div>
+                </div>
+                <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                        className="btn-action-wow" 
+                        onClick={() => toggleAllChapters(true)}
+                        title="Expandir todas las secciones"
+                    >
+                        <ChevronDown size={14} /> Expandir Todo
+                    </button>
+                    <button 
+                        className="btn-action-wow outline"
+                        onClick={() => toggleAllChapters(false)}
+                        title="Colapsar todas las secciones"
+                    >
+                        <ChevronRight size={14} /> Colapsar Todo
                     </button>
                 </div>
             </div>
@@ -1540,12 +1699,48 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                     return (
                         <React.Fragment key={act.id}>
                             {showHeader && (
-                                <div className="chapter-header" onClick={() => toggleChapter(act.capitulo)} style={{ cursor: 'pointer' }}>
-                                    <div className="chapter-line"></div>
-                                    <span className="chapter-tag">{act.capitulo}</span>
-                                    <button className="chapter-toggle-btn">
-                                        {isCollapsed ? <ChevronRight size={14} /> : <div style={{ transform: 'rotate(90deg)' }}><ChevronRight size={14} /></div>}
-                                    </button>
+                                <div 
+                                    className={`chapter-header ${isCollapsed ? 'collapsed' : 'expanded'}`} 
+                                    onClick={() => toggleChapter(act.capitulo)} 
+                                    style={{ 
+                                        cursor: 'pointer',
+                                        background: isCollapsed ? '#F8FAFC' : '#6c733d',
+                                        color: isCollapsed ? '#475569' : 'white',
+                                        padding: '12px 20px',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        marginBottom: isCollapsed ? '12px' : '20px',
+                                        marginTop: index > 0 ? '24px' : '0',
+                                        transition: 'all 0.3s ease',
+                                        border: isCollapsed ? '1px solid #E2E8F0' : 'none',
+                                        boxShadow: isCollapsed ? 'none' : '0 4px 12px rgba(108, 115, 61, 0.2)'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ 
+                                            width: '28px', 
+                                            height: '28px', 
+                                            borderRadius: '50%', 
+                                            background: isCollapsed ? '#E2E8F0' : 'rgba(255,255,255,0.2)', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center',
+                                            fontSize: '12px',
+                                            fontWeight: '700'
+                                        }}>
+                                            {act.capitulo.split('.')[0]}
+                                        </div>
+                                        <span style={{ fontWeight: '700', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            {act.capitulo}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                        <div style={{ transform: isCollapsed ? 'none' : 'rotate(90deg)', transition: 'transform 0.3s' }}>
+                                            <ChevronRight size={18} />
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
@@ -2724,7 +2919,44 @@ const BitacoraView = ({ currentUser, initialProjectId = null }) => {
                 .activities-timeline-container h3 { margin: 0 0 24px; color: var(--color-gris-oscuro); }
                 .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 
-                .timeline-items { display: flex; flex-direction: column; }
+                .timeline-items { 
+                    display: flex; 
+                    flex-direction: column; 
+                    padding: 4px;
+                    border-radius: 8px;
+                    background: #F8FAFC;
+                    min-height: 400px;
+                }
+                .btn-action-wow {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 14px;
+                    background: #2D5F3E;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 4px 6px -1px rgba(45, 95, 62, 0.2);
+                }
+                .btn-action-wow:hover {
+                    background: #1F4129;
+                    transform: translateY(-1px);
+                    box-shadow: 0 6px 12px -2px rgba(45, 95, 62, 0.3);
+                }
+                .btn-action-wow.outline {
+                    background: white;
+                    color: #475569;
+                    border: 1px solid #E2E8F0;
+                    box-shadow: none;
+                }
+                .btn-action-wow.outline:hover {
+                    background: #F8FAFC;
+                    border-color: #CBD5E1;
+                }
                 .timeline-item { display: flex; gap: 20px; position: relative; padding-bottom: 24px; }
                 .timeline-item:last-child { padding-bottom: 0; }
                 .timeline-item:not(:last-child)::after {

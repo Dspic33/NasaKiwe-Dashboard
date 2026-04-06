@@ -16,26 +16,21 @@ import {
     Cell
 } from 'recharts'
 import {
-    TrendingUp,
-    AlertCircle,
-    CheckCircle2,
-    Home,
-    Users,
-    Activity,
-    Calendar,
-    ArrowUpRight,
-    MapPin
+    MapPin,
+    DollarSign,
+    Zap,
+    Target
 } from 'lucide-react'
 
-// Reutilizamos el catálogo de actividades para calcular porcentajes (23 actividades)
-const ACTIVIDADES_CATALOGO_IDS = [
-    '55615705-5c1a-4286-990a-6e5a6a6a6a6a', '55615705-5c1a-4286-990a-6e5a6a6a6a6b', '55615705-5c1a-4286-990a-6e5a6a6a6a6c', '55615705-5c1a-4286-990a-6e5a6a6a6a6d',
-    '55615705-5c1a-4286-990a-6e5a6a6a6a6e', '55615705-5c1a-4286-990a-6e5a6a6a6a6f', '55615705-5c1a-4286-990a-6e5a6a6a6a60', '55615705-5c1a-4286-990a-6e5a6a6a6a61',
-    '55615705-5c1a-4286-990a-6e5a6a6a6a62', '55615705-5c1a-4286-990a-6e5a6a6a6a63', '55615705-5c1a-4286-990a-6e5a6a6a6a64', '55615705-5c1a-4286-990a-6e5a6a6a6a65',
-    '55615705-5c1a-4286-990a-6e5a6a6a6a66', '55615705-5c1a-4286-990a-6e5a6a6a6a67', '55615705-5c1a-4286-990a-6e5a6a6a6a68', '55615705-5c1a-4286-990a-6e5a6a6a6a69',
-    '55615705-5c1a-4286-990a-6e5a6a6a6b6a', '55615705-5c1a-4286-990a-6e5a6a6a6b6b', '55615705-5c1a-4286-990a-6e5a6a6a6b6c', '55615705-5c1a-4286-990a-6e5a6a6a6b6d',
-    '55615705-5c1a-4286-990a-6e5a6a6a6b6e', '55615705-5c1a-4286-990a-6e5a6a6a6b6f', '55615705-5c1a-4286-990a-6e5a6a6a6b70'
-];
+import { ACTIVIDADES_CATALOGO } from '../../data/catalog'
+import { calculateEVM, getEVMSummary } from '../../utils/evmUtils'
+
+// Se utiliza el catálogo completo de 77 actividades
+const ACTIVIDADES_CATALOGO_IDS = ACTIVIDADES_CATALOGO
+    .filter(a => a.capitulo !== '13. AUI') // Excluimos AUI de las actividades reportables
+    .map(a => a.id);
+
+const TOTAL_BUDGET_PER_HOUSE = 95000000;
 
 const PROJECT_CONFIGS = {
     '1': { nombre: 'Vitoncó', casas: 3 },
@@ -52,7 +47,9 @@ const InspectorDashboard = () => {
         completedHouses: 0,
         totalHouses: TOTAL_HOUSES_ALL,
         avanceGlobal: 0,
-        alertas: 0
+        spi: 1.0,
+        cpi: 1.0,
+        ppc: 0
     });
 
     useEffect(() => {
@@ -90,32 +87,70 @@ const InspectorDashboard = () => {
     };
 
     const procesarEstadisticas = (allData) => {
-        const TOTAL_ACTIVIDADES_PER_HOUSE = ACTIVIDADES_CATALOGO_IDS.length; // 23
+        const TOTAL_ACTIVIDADES_PER_HOUSE = ACTIVIDADES_CATALOGO_IDS.length; 
 
         // Agrupar por Proyecto + Vivienda
         const houseProgression = {}; // { 'key': { actividad_id: progreso } }
+        let totalEV = 0;
+        let totalAC = 0; // AC (Actual Cost) estimación basada en reportes
+        let totalPV = 0; // PV (Planned Value) estimación simplificada
 
         allData.forEach(reg => {
             const pid = reg.proyecto_id || '1';
             const vnum = reg.vivienda_num;
             const key = `${pid}_${vnum}`;
 
-            if (!houseProgression[key]) {
-                houseProgression[key] = {};
-            }
+            if (!houseProgression[key]) houseProgression[key] = {};
 
-            // Lógica ADITIVA: sumamos los progresos de cada reporte para esta actividad
+            // Lógica de progreso por actividad
             const currentActProg = houseProgression[key][reg.actividad_id] || 0;
-            const newTotal = currentActProg + (reg.progreso || 0);
-
-            // Capar a 100% por actividad
+            const reportProg = reg.progreso || 0;
+            const newTotal = currentActProg + reportProg;
             houseProgression[key][reg.actividad_id] = newTotal > 100 ? 100 : newTotal;
+
+            // Cálculo de Valor Ganado (EV)
+            // EV = % Progreso * Valor Estimado de la actividad
+            const catalogItem = ACTIVIDADES_CATALOGO.find(a => a.id === reg.actividad_id);
+            if (catalogItem) {
+                // Sumamos el valor ganado incremental de este reporte específico
+                // Si el reporte ya está registrado, esto podría duplicar. 
+                // En un sistema real, EV se calcula sobre el estado actual consolidado.
+            }
         });
 
-        // Casas terminadas: Todas sus actividades al 100%
+        // Consolidamos EV por estado final de cada casa
+        let aggregateEV = 0;
+        let activitiesCompletedOnTime = 0;
+        let totalActivitiesPlanned = 0;
+
+        Object.keys(houseProgression).forEach(houseKey => {
+            Object.keys(houseProgression[houseKey]).forEach(actId => {
+                const prog = houseProgression[houseKey][actId];
+                const item = ACTIVIDADES_CATALOGO.find(a => a.id === actId);
+                if (item) {
+                    aggregateEV += (prog / 100) * (item.valor_estimado || 0);
+                    if (prog === 100) activitiesCompletedOnTime++;
+                }
+                totalActivitiesPlanned++;
+            });
+        });
+
+        // Estimación PV (Planned Value): % del tiempo transcurrido (Mock para demo)
+        const totalProjectBudget = TOTAL_HOUSES_ALL * TOTAL_BUDGET_PER_HOUSE;
+        const projectStartTime = new Array(...allData).pop()?.created_at || new Date();
+        const daysPassed = (new Date() - new Date(projectStartTime)) / (1000 * 60 * 60 * 24);
+        const estimatedProgressPlan = Math.min(100, (daysPassed / 120) * 100); // Asumimos 120 días de proyecto total
+        const aggregatePV = (estimatedProgressPlan / 100) * totalProjectBudget || (totalProjectBudget * 0.1); 
+
+        // Estimación AC (Actual Cost): EV + un pequeño margen de error/variación (Mock para demo)
+        const aggregateAC = aggregateEV * 1.05; 
+
+        const { spi, cpi, ppc } = calculateEVM(aggregateEV, aggregatePV, aggregateAC, activitiesCompletedOnTime, totalActivitiesPlanned || 1);
+
+        // Casas terminadas
         const completedHousesCount = Object.keys(houseProgression).filter(key => {
             const activities = Object.values(houseProgression[key]);
-            return activities.length === TOTAL_ACTIVIDADES_PER_HOUSE && activities.every(p => p === 100);
+            return activities.length >= TOTAL_ACTIVIDADES_PER_HOUSE && activities.every(p => p === 100);
         }).length;
 
         // Avance Macro
@@ -131,7 +166,9 @@ const InspectorDashboard = () => {
             completedHouses: completedHousesCount,
             totalHouses: TOTAL_HOUSES_ALL,
             avanceGlobal: avanceGlobal,
-            alertas: TOTAL_HOUSES_ALL - Object.keys(houseProgression).length
+            spi: spi,
+            cpi: cpi,
+            ppc: ppc
         });
     };
 
@@ -169,26 +206,39 @@ const InspectorDashboard = () => {
                     <h1>Panel de Supervisión Macro</h1>
                     <p>Monitoreo global de proyectos y cumplimiento de cronogramas</p>
                 </div>
-                <div className="macro-stats">
-                    <div className="macro-stat-card">
-                        <Activity size={24} color="#C0001D" />
+                <div className="macro-stats-evm">
+                    <div className="macro-stat-card-evm" title="SPI > 1.0 indica adelanto en cronograma">
+                        <Calendar size={20} color="#6B7280" />
                         <div className="macro-stat-info">
-                            <span className="macro-value">{stats.avanceGlobal}%</span>
-                            <span className="macro-label">Avance Global</span>
+                            <span className="macro-label">SPI (Cronograma)</span>
+                            <span className="macro-value" style={{ color: getEVMSummary(stats.spi, 1).color }}>
+                                {stats.spi.toFixed(2)}
+                            </span>
                         </div>
                     </div>
-                    <div className="macro-stat-card">
-                        <Home size={24} color="#10B981" />
+                    <div className="macro-stat-card-evm" title="CPI > 1.0 indica ahorro en presupuesto">
+                        <DollarSign size={20} color="#6B7280" />
                         <div className="macro-stat-info">
+                            <span className="macro-label">CPI (Costos)</span>
+                            <span className="macro-value" style={{ color: getEVMSummary(stats.cpi, 1).color }}>
+                                {stats.cpi.toFixed(2)}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="macro-stat-card-evm" title="PPC > 80% indica alta confiabilidad de plan">
+                        <Target size={20} color="#6B7280" />
+                        <div className="macro-stat-info">
+                            <span className="macro-label">PPC (Planificación)</span>
+                            <span className="macro-value" style={{ color: getEVMSummary(stats.ppc, 80).color }}>
+                                {stats.ppc}%
+                            </span>
+                        </div>
+                    </div>
+                    <div className="macro-stat-card-evm">
+                        <Home size={20} color="#6B7280" />
+                        <div className="macro-stat-info">
+                            <span className="macro-label">Viviendas</span>
                             <span className="macro-value">{stats.completedHouses}/{stats.totalHouses}</span>
-                            <span className="macro-label">Casas Terminadas</span>
-                        </div>
-                    </div>
-                    <div className="macro-stat-card">
-                        <AlertCircle size={24} color="#F59E0B" />
-                        <div className="macro-stat-info">
-                            <span className="macro-value">{stats.alertas}</span>
-                            <span className="macro-label">Alertas de Retraso</span>
                         </div>
                     </div>
                 </div>
@@ -303,21 +353,28 @@ const InspectorDashboard = () => {
                 .title-section h1 { margin: 0; font-size: 28px; color: var(--color-gris-oscuro); }
                 .title-section p { margin: 4px 0 0; color: var(--color-gris-medio); }
 
-                .macro-stats { display: flex; gap: 20px; }
-                .macro-stat-card {
+                .macro-stats-evm {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                    gap: 16px;
+                    flex: 1;
+                    margin-left: 40px;
+                }
+                .macro-stat-card-evm {
                     background: white;
-                    padding: 16px 24px;
+                    padding: 12px 20px;
                     border-radius: 12px;
-                    box-shadow: var(--shadow-sm);
                     display: flex;
                     align-items: center;
-                    gap: 16px;
-                    min-width: 180px;
+                    gap: 12px;
+                    box-shadow: var(--shadow-sm);
                     border: 1px solid #E5E7EB;
+                    transition: transform 0.2s;
                 }
+                .macro-stat-card-evm:hover { transform: translateY(-3px); }
                 .macro-stat-info { display: flex; flex-direction: column; }
-                .macro-value { font-size: 20px; font-weight: 800; color: var(--color-gris-oscuro); }
-                .macro-label { font-size: 12px; color: var(--color-gris-medio); font-weight: 500; }
+                .macro-label { font-size: 11px; font-weight: 600; color: var(--color-gris-medio); text-transform: uppercase; }
+                .macro-value { font-size: 18px; font-weight: 800; color: var(--color-gris-oscuro); }
 
                 .charts-grid {
                     display: grid;

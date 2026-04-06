@@ -37,15 +37,116 @@ import { offlineStorage } from './src/utils/offlineStorage';
 
 // Colores institucionales
 const COLORS = {
-  primary: '#C0001D', // Rojo Institucional Nasa Kiwe
-  secondary: '#d85b1d', // Café/Naranja
-  accent: '#f9e8bb', // Crema
-  success: '#10B981',
-  error: '#DC2626',
-  white: '#FFFFFF',
-  gray: '#F3F4F6',
-  text: '#1F2937'
 };
+
+const ACTIVIDADES_AGRUPADAS = {
+  '1. Preliminares': [
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6a', nombre: '1.01 Localización y replanteo' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6b', nombre: '1.02 Excavación manual' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6c', nombre: '1.03 Relleno con material de sitio' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6d', nombre: '1.04 Sobre acarreo de materiales' }
+  ],
+  '2. Cimentación': [
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6e', nombre: '2.01 Solado de limpieza' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6f', nombre: '2.02 Viga de cimentación 0.20*0.25m' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a60', nombre: '2.03 Viga de cimentación 0.20*0.20m' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a61', nombre: '2.04 Concreto Ciclópeo' }
+  ],
+  '3. Estructura': [
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a62', nombre: '3.01 Viga de amarre' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a63', nombre: '3.02 Viga cumbrera' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a64', nombre: '3.03 Columna 0.20*0.20m' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a65', nombre: '3.04 Columna 0.12*0.20m' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a66', nombre: '3.05 Cinta de amarre' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a67', nombre: '3.06 Acero de refuerzo Grado 60' }
+  ],
+  '4. Cubierta': [
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a68', nombre: '4.01 Correas tipo Perlín' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6a69', nombre: '4.02 Teja de fibrocemento P7' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6a', nombre: '4.03 Caballete fijo' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6b', nombre: '4.04 Cumbreras y limatesas' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6c', nombre: '4.05 Solapa en lámina metálica' }
+  ],
+  '5. Pisos': [
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6d', nombre: '5.01 Piso primario e=0.07m' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6e', nombre: '5.02 Piso cerámico comercial' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6f', nombre: '5.03 Guardaescoba cerámico' },
+    { id: '55615705-5c1a-4286-990a-6e5a6a6a6b70', nombre: '5.04 Andén en concreto 21MPa' }
+  ],
+  '6. Mampostería': [
+    { id: 'new-6-01', nombre: '6.01 Muro ladrillo' },
+    { id: 'new-6-02', nombre: '6.02 Mezón de cocina concreto' },
+    { id: 'new-6-03', nombre: '6.03 Repello Muro en mortero 1:3' }
+  ],
+  '7. Hidrosanitario': [
+    { id: 'new-7-01', nombre: '7.01 Punto sanitario PVC 4"' },
+    { id: 'new-7-02', nombre: '7.02 Punto sanitario PVC 2"' },
+    { id: 'new-7-03', nombre: '7.03 Puntos hidráulicos PVC 1/2"' },
+    { id: 'new-7-04', nombre: '7.04 Red hidráulica PVC-P 1/2"' },
+    { id: 'new-7-05', nombre: '7.05 Red sanitaria PVC-S 2" pesado' },
+    { id: 'new-7-06', nombre: '7.06 Red de aguas lluvias PVC 3"' },
+    { id: 'new-7-07', nombre: '7.07 Red sanitaria PVC-S 4" pesado' },
+    { id: 'new-7-08', nombre: '7.08 Caja de inspección 0,50*0,50m' },
+    { id: 'new-7-09', nombre: '7.09 Rejilla metálica con sosco 2"' },
+    { id: 'new-7-10', nombre: '7.10 Llaves de paso 1/2"' },
+    { id: 'new-7-11', nombre: '7.11 Ducha + registro y pomo' }
+  ],
+  '8. Eléctricas': [
+    { id: 'new-8-01', nombre: '8.01 Acometida de medidor' },
+    { id: 'new-8-02', nombre: '8.02 Sistema de aterrizaje tablero' },
+    { id: 'new-8-03', nombre: '8.03 Tablero eléctrico 1f,6' },
+    { id: 'new-8-04', nombre: '8.04 Salida toma monofásica doble' },
+    { id: 'new-8-05', nombre: '8.05 Salida toma doble GFSI' },
+    { id: 'new-8-06', nombre: '8.06 Salida para lámpara pvc' }
+  ],
+  '9. Carpintería': [
+    { id: 'new-9-01', nombre: '9.01 Puerta lamina de acero C=20' },
+    { id: 'new-9-02', nombre: '9.02 Luceta lamina de acero C=20' },
+    { id: 'new-9-03', nombre: '9.03 Ventana metálica de C=20' },
+    { id: 'new-9-04', nombre: '9.04 Canal metálico C= 20' },
+    { id: 'new-9-05', nombre: '9.05 Vidrio liso de 4 Mm' }
+  ],
+  '10. Enchapes': [
+    { id: 'new-10-01', nombre: '10.01 Enchape piso-muro tradicional' },
+    { id: 'new-10-02', nombre: '10.02 Combo sanitario + accesorios' },
+    { id: 'new-10-03', nombre: '10.03 Lavaplatos acero inox' },
+    { id: 'new-10-04', nombre: '10.04 Revestimiento graniplast' },
+    { id: 'new-10-05', nombre: '10.05 Lavadero prefabricado' }
+  ],
+  '11. Saneamiento': [
+    { id: 'new-11-01', nombre: '11.01 Excavación manual Saneamiento' },
+    { id: 'new-11-02', nombre: '11.02 Relleno compactación manual' },
+    { id: 'new-11-03', nombre: '11.03 Red hidráulica PVC 1/2"' },
+    { id: 'new-11-04', nombre: '11.04 Tubería PVC 110 mm' },
+    { id: 'new-11-05', nombre: '11.05 Tubería PVC-S 4" pesado' },
+    { id: 'new-11-06', nombre: '11.06 Tubería PVC-S 2" pesado' },
+    { id: 'new-11-07', nombre: '11.07 Adaptador PVC 110 mm x 4"' },
+    { id: 'new-11-08', nombre: '11.08 Tee PVC-S 4" pesado' },
+    { id: 'new-11-09', nombre: '11.09 Tee PVC-S 2" pesado' },
+    { id: 'new-11-10', nombre: '11.10 Codo PVC-S 4" pesado' },
+    { id: 'new-11-11', nombre: '11.11 Codo PVC-S 2"*90 pesado' },
+    { id: 'new-11-12', nombre: '11.12 Trampa de grasas 105L' },
+    { id: 'new-11-13', nombre: '11.13 Tanque Séptico 1000L' },
+    { id: 'new-11-14', nombre: '11.14 FAFA 1000L' },
+    { id: 'new-11-15', nombre: '11.15 Rosetón en Polietileno' },
+    { id: 'new-11-16', nombre: '11.16 Arena Gruesa tanques' },
+    { id: 'new-11-17', nombre: '11.17 Caja de inspección 0,70x0,70m' }
+  ],
+  '12. Otros': [
+    { id: 'new-12-01', nombre: '12.01 Aseo general' },
+    { id: 'new-12-02', nombre: '12.02 Planos récord' },
+    { id: 'new-12-03', nombre: '12.03 Ensayos de laboratorio' }
+  ],
+  '13. AUI': [
+    { id: 'new-13-01', nombre: 'Administración (24%)' },
+    { id: 'new-13-02', nombre: 'Imprevistos (3%)' },
+    { id: 'new-13-03', nombre: 'Utilidad (5%)' },
+    { id: 'new-13-04', nombre: 'IVA sobre Utilidad' }
+  ]
+};
+
+// Lista plana de IDs en orden secuencial para validación
+const ALL_ACTIVITIES_FLAT = Object.values(ACTIVIDADES_AGRUPADAS).flat();
 
 export default function App() {
   const [proyectosDB, setProyectosDB] = useState([]);
@@ -66,7 +167,13 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(true);
   const [houseProgress, setHouseProgress] = useState({});
   const [activitiesProgress, setActivitiesProgress] = useState({});
-  const [expandedChapters, setExpandedChapters] = useState({ 'Preliminares': true });
+  const [expandedChapters, setExpandedChapters] = useState(
+    Object.keys(ACTIVIDADES_AGRUPADAS).reduce((acc, cap) => {
+      acc[cap] = true;
+      return acc;
+    }, {})
+  );
+  const [allExpanded, setAllExpanded] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
   const [selectedHouse, setSelectedHouse] = useState(null);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -128,47 +235,20 @@ export default function App() {
     }
   };
 
-  const ACTIVIDADES_AGRUPADAS = {
-    'Preliminares': [
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6a', nombre: '1.01 Localización y replanteo' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6b', nombre: '1.02 Excavación manual' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6c', nombre: '1.03 Relleno con material de sitio' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6d', nombre: '1.04 Sobre acarreo de materiales' }
-    ],
-    'Cimentación': [
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6e', nombre: '2.01 Solado de limpieza' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a6f', nombre: '2.02 Viga de cimentación 0.20*0.25m' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a60', nombre: '2.03 Viga de cimentación 0.20*0.20m' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a61', nombre: '2.04 Concreto Ciclópeo' }
-    ],
-    'Estructura': [
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a62', nombre: '3.01 Viga de amarre' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a63', nombre: '3.02 Viga cumbrera' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a64', nombre: '3.03 Columna 0.20*0.20m' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a65', nombre: '3.04 Columna 0.12*0.20m' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a66', nombre: '3.05 Cinta de amarre' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a67', nombre: '3.06 Acero de refuerzo Grado 60' }
-    ],
-    'Cubierta': [
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a68', nombre: '4.01 Correas tipo Perlín' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6a69', nombre: '4.02 Teja de fibrocemento P7' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6a', nombre: '4.03 Caballete fijo' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6b', nombre: '4.04 Cumbreras y limatesas' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6c', nombre: '4.05 Solapa en lámina metálica' }
-    ],
-    'Pisos': [
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6d', nombre: '5.01 Piso primario e=0.07m' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6e', nombre: '5.02 Piso cerámico comercial' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b6f', nombre: '5.03 Guardaescoba cerámico' },
-      { id: '55615705-5c1a-4286-990a-6e5a6a6a6b70', nombre: '5.04 Andén en concreto 21MPa' }
-    ]
-  };
-
-  // Lista plana de IDs en orden secuencial para validación
-  const ALL_ACTIVITIES_FLAT = Object.values(ACTIVIDADES_AGRUPADAS).flat();
 
   const toggleChapter = (capitulo) => {
     setExpandedChapters(prev => ({ ...prev, [capitulo]: !prev[capitulo] }));
+  };
+
+  const toggleAllChapters = (expand) => {
+    const newState = {};
+    if (expand) {
+      Object.keys(ACTIVIDADES_AGRUPADAS).forEach(cap => {
+        newState[cap] = true;
+      });
+    }
+    setExpandedChapters(newState);
+    setAllExpanded(expand);
   };
 
   // Simulación de detección de red y solicitud de GPS
@@ -228,7 +308,7 @@ export default function App() {
 
       const dataForCalc = [...combinedData, ...offlineEntries];
 
-      const totalActivitiesCount = 23; // Catálogo fijo
+      const totalActivitiesCount = 77; // Nuevo catálogo ampliado (incluyendo AUI si es reportable)
       const houseProgSum = {};
       const activitiesAccounted = {};
       const currentHouseDetail = {};
@@ -760,16 +840,31 @@ export default function App() {
       </View>
 
       <ScrollView style={styles.content}>
-        <Text style={styles.sectionLabel}>CRONOGRAMA DE EJECUCIÓN</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+          <Text style={styles.sectionLabel}>CRONOGRAMA DE EJECUCIÓN</Text>
+          <TouchableOpacity 
+            onPress={() => toggleAllChapters(!allExpanded)}
+            style={{ backgroundColor: '#F1F5F9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: '#CBD5E1' }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '700', color: COLORS.primary }}>
+              {allExpanded ? 'Colapsar Todo' : 'Expandir Todo'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {Object.entries(ACTIVIDADES_AGRUPADAS).map(([capitulo, actividades]) => (
           <View key={capitulo} style={styles.chapterContainer}>
             <TouchableOpacity
-              style={styles.chapterHeader}
+              style={[
+                styles.chapterHeader,
+                expandedChapters[capitulo] && { borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }
+              ]}
               onPress={() => toggleChapter(capitulo)}
             >
               <Text style={styles.chapterTitle}>{capitulo}</Text>
-              {expandedChapters[capitulo] ? <ChevronLeft style={{ transform: [{ rotate: '-90deg' }] }} color={COLORS.primary} size={20} /> : <ChevronRight color={COLORS.primary} size={20} />}
+              <View style={{ transform: [{ rotate: expandedChapters[capitulo] ? '90deg' : '0deg' }] }}>
+                <ChevronRight color={COLORS.primary} size={20} />
+              </View>
             </TouchableOpacity>
 
             {expandedChapters[capitulo] && (
